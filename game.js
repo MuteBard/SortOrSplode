@@ -244,14 +244,11 @@ class Circle extends Entity{
         this.radius = radius;
         this.ballSpeedX = 5 * dirX;
         this.ballSpeedY = 5 * dirY;
-
-
     }
 
     invulerableSwitch(){
         this.invulerable = true;
-        setTimeout(() => this.invulerable = false, 100);
-        
+        setTimeout(() => this.invulerable = false, 100);  
     }
 
     get Radius(){
@@ -491,7 +488,7 @@ class Zone{
 var mouseX = 0; 
 var mouseY = 0;
 var pendingCircleInitialization = true;
-circleRepository = Array(0).fill(new Circle());
+circleRepository = Array(1).fill(new Circle());
 var spawns = [];
 var behavior = {
     scene : {
@@ -518,14 +515,19 @@ var layers = {
         let red = new Brick(context, 25, 25, "#BB3030", behavior.sector);
         let purple = new Brick(context, 25, 25, "#950DEC", behavior.sector);
         let yellow = new Brick(context, 25, 25, "#FFFF00", behavior.sector);
+        let orange = new Brick(context, 25, 25, "#FF5733", behavior.scene)
         let gray = new Brick(context, 25, 25, "#808080", behavior.spawn);
 
         //Define the size and position and the type of brick used to create zones and add to the zones array
         let zones = [];
         zones.push(new Zone(0, 0, 32, 29, back));
-        zones.push(new Zone(0, 10, 6, 9, red))
-        zones.push(new Zone(26, 10, 6, 9, purple))
-        zones.push(new Zone(13, 10, 6, 9, yellow))
+
+        zones.push(new Zone(0, 9, 8, 11, orange))
+        zones.push(new Zone(1, 10, 6, 9, red))
+        
+        zones.push(new Zone(24, 9, 8, 11, orange))
+        zones.push(new Zone(25, 10, 6, 9, purple))
+
         zones.push(new Zone(15, 0, 2, 1, gray))
         zones.push(new Zone(15, 28, 2, 1, gray))
 
@@ -547,15 +549,6 @@ var layers = {
 
         return layoutFullySuperimposed
 
-
-
-        // layout0 = baseZone.getZone()
-        // let layout1 = (new Zone(...createUsingZone, layout0)).addZone(redZone);
-        // let layout2 = (new Zone(...createUsingZone, layout1)).addZone(purpleZone);
-        // let layout3 = (new Zone(...createUsingZone, layout2)).addZone(spawnZone1);
-        // let layout4 = (new Zone(...createUsingZone, layout3)).addZone(spawnZone2);
-        // let layout5 = (new Zone(...createUsingZone, layout4)).addZone(yellowZone);
-        // return layout5;
     })
 }
 
