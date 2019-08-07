@@ -482,16 +482,8 @@ class GenerateLayer{
         return this.savedSpawns
     }
 }
-
-let mouse = {
-    x : 0 ,
-    y : 0,
-    pressed : false,
-    holding : null
-}
-
-var pendingCircleInitialization = true;
 var circleRepository = Array(10).fill(new Circle());
+var pendingCircleInitialization = true;
 var spawns = [];
 var behavior = {
     scene : {
@@ -543,10 +535,16 @@ var layers = {
 
     })
 }
+let mouse = {
+    x : 0 ,
+    y : 0,
+    pressed : false,
+    holding : null
+}
 
 window.onload = () => {
     //this is so that we can access the width and the height
-    canvas = document.getElementById("pong");
+    canvas = document.getElementById("SOS");
     //this is so we have access to the graphics buffer. Graphical text, lines, colors, fill, shapes
     canvasContext = canvas.getContext('2d');
     var framesPerSecond = 30;
@@ -554,7 +552,6 @@ window.onload = () => {
     canvas.addEventListener('mousemove', updateMousePos)
     canvas.addEventListener('mousedown', toggleDrag)
 }
-
 
 var drawCode = () => {
     createWindow();
@@ -642,8 +639,6 @@ var toggleDrag = () => {
      }
 }
 
-
-//e is the expected argument for an event reciever
 var updateMousePos = (e) => {
     //Return the size of an element and its position relative to the viewport
     //https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_element_getboundingclientrect
