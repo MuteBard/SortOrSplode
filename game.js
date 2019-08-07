@@ -1,54 +1,3 @@
-
-
-
-
-class GenerateLayer{
-    layer;
-    savedBricks;
-    savedSpawns;
-
-    constructor(layer){
-        this.layer = layer;
-        this.savedBricks = [];
-        this.savedSpawns = [];
-    }
-
-    implimentBricksFromLayer(){
-        //access each the rows of a layer (up and down, y)
-        for(let i = 0; i < this.layer.length; i++){
-            //access each the columns of a row (left and right, x)
-            for(let j = 0; j < this.layer[i].length; j++){
-                //define a brick
-                let brick = this.layer[i][j];
-                //continue if the brick is visible
-                if(brick.isVisible){  
-                    //identify the brick so thst it can calculate its position
-                    brick.IdX = j;
-                    brick.IdY = i;
-                    //display the bricks
-                    brick.display();
-                    //holyshit javascript is dumb sometimes :joy:
-                    //finally resolves issue with coordinates being the same in the end
-                    let newBrick = Object.assign({}, brick)
-                    this.savedBricks.push(newBrick)
-                    if(brick.isSpawn == true){
-                        this.savedSpawns.push(newBrick)
-                    }          
-                }
-            } 
-        }
-    }
-
-    get SavedBricks(){
-        return this.savedBricks
-        
-    }
-
-    get SavedSpawns(){
-        return this.savedSpawns
-    }
-}
-
 class Entity{
     context;
     x;
@@ -487,6 +436,52 @@ class Zone{
     }
 }
 
+class GenerateLayer{
+    layer;
+    savedBricks;
+    savedSpawns;
+
+    constructor(layer){
+        this.layer = layer;
+        this.savedBricks = [];
+        this.savedSpawns = [];
+    }
+
+    implimentBricksFromLayer(){
+        //access each the rows of a layer (up and down, y)
+        for(let i = 0; i < this.layer.length; i++){
+            //access each the columns of a row (left and right, x)
+            for(let j = 0; j < this.layer[i].length; j++){
+                //define a brick
+                let brick = this.layer[i][j];
+                //continue if the brick is visible
+                if(brick.isVisible){  
+                    //identify the brick so thst it can calculate its position
+                    brick.IdX = j;
+                    brick.IdY = i;
+                    //display the bricks
+                    brick.display();
+                    //holyshit javascript is dumb sometimes :joy:
+                    //finally resolves issue with coordinates being the same in the end
+                    let newBrick = Object.assign({}, brick)
+                    this.savedBricks.push(newBrick)
+                    if(brick.isSpawn == true){
+                        this.savedSpawns.push(newBrick)
+                    }          
+                }
+            } 
+        }
+    }
+
+    get SavedBricks(){
+        return this.savedBricks
+        
+    }
+
+    get SavedSpawns(){
+        return this.savedSpawns
+    }
+}
 
 let mouse = {
     x : 0 ,
@@ -569,6 +564,7 @@ var drawCode = () => {
         pendingCircleInitialization = false;
     }
     displayCircles(circleRepository)
+    implementCircleInteraction()
     displayMouseCoordinates()
 }
 
@@ -582,10 +578,6 @@ var displayLayers = () => {
     generateLayout = new GenerateLayer(layout(canvasContext));
     generateLayout.implimentBricksFromLayer();
     spawns = generateLayout.SavedSpawns
-    if(pendingCircleInitialization === false){
-        collisionWithBricksActive()
-        interactionWithMouseActive()
-    } 
 }
 
 var displayCircles = (circleRepository) =>{
@@ -593,7 +585,11 @@ var displayCircles = (circleRepository) =>{
         circle.display()
         circle.move(canvas)
     })
+}
 
+var implementCircleInteraction = () => {
+        collisionWithBricksActive()
+        interactionWithMouseActive()
 }
 
 var collisionWithBricksActive = () => {
