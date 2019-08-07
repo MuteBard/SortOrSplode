@@ -535,7 +535,6 @@ var layers = {
         zones.push(new Zone(15, 0, 2, 1, gray))
         zones.push(new Zone(15, 28, 2, 1, gray))
 
-        // let createNullParameters = Array(5).fill(null);
         let ZonesFullySuperimposed = zones.reduce((oldZone, newZone) => oldZone.addZone(newZone))
         return ZonesFullySuperimposed.getLayout()
 
