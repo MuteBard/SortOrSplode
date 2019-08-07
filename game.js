@@ -165,8 +165,8 @@ class Brick extends Rectangle{
     obstacle;
     spawn;
     
-    constructor(context, x, y, width, height, color, behaviorType){
-        super(context, x, y, width, height, color)
+    constructor(context, width, height, color, behaviorType){
+        super(context, null, null, width, height, color)
         this.visible = behaviorType.isVisible;
         this.obstacle = behaviorType.isObstacle;
         this.spawn = behaviorType.isSpawn
@@ -513,19 +513,12 @@ var behavior = {
 var layers = {
     "lvl1" : 
         ((context) => {
-        let tbd = null;
-        let isSpawn = true;
-        let isObstacle = true;
-        let isVisible = true;
-        //the tbd sections represent the x and y positions, which will be determined based on position in array
-        
-
         //Define the size, color and behavior of a brick. Position is negligible here
-        let back = new Brick(context, 100, 100, 25, 25, "#EAEAEA", behavior.scene);
-        let red = new Brick(context, 100, 100, 25, 25, "#BB3030", behavior.sector);
-        let purple = new Brick(context, 100, 100, 25, 25, "#950DEC", behavior.sector);
-        let yellow = new Brick(context, 100, 100, 25, 25, "#FFFF00", behavior.sector);
-        let gray = new Brick(context, 100, 100, 25, 25, "#808080", behavior.spawn);
+        let back = new Brick(context, 25, 25, "#EAEAEA", behavior.scene);
+        let red = new Brick(context, 25, 25, "#BB3030", behavior.sector);
+        let purple = new Brick(context, 25, 25, "#950DEC", behavior.sector);
+        let yellow = new Brick(context, 25, 25, "#FFFF00", behavior.sector);
+        let gray = new Brick(context, 25, 25, "#808080", behavior.spawn);
 
         //Define the size and position and the type of brick used to create zones and add to the zones array
         let zones = [];
