@@ -1,3 +1,7 @@
+
+
+
+
 class GenerateLayer{
     layer;
     savedBricks;
@@ -161,11 +165,11 @@ class Brick extends Rectangle{
     obstacle;
     spawn;
     
-    constructor(context, x, y, width, height, color, visible, obstacle, spawn){
+    constructor(context, x, y, width, height, color, behaviorType){
         super(context, x, y, width, height, color)
-        this.visible = visible;
-        this.obstacle = obstacle;
-        this.spawn = spawn
+        this.visible = behaviorType.isVisible;
+        this.obstacle = behaviorType.isObstacle;
+        this.spawn = behaviorType.isSpawn
     }
 
     set IdX(idX){
@@ -459,7 +463,7 @@ class Zone{
         }
     }
 
-    getZone(){
+    getLayout(){
         return this.layout;
     }
 
@@ -482,11 +486,30 @@ class Zone{
     }
 }
 
+
+
 var mouseX = 0; 
 var mouseY = 0;
 var pendingCircleInitialization = true;
-circleRepository = Array(50).fill(new Circle());
+circleRepository = Array(0).fill(new Circle());
 var spawns = [];
+var behavior = {
+    scene : {
+        isVisible : true,
+        isObstacle : false,
+        isSpawn : false
+    },
+    sector : {
+        isVisible : true,
+        isObstacle : true,
+        isSpawn : false
+    },
+    spawn : {
+        isVisible : true,
+        isObstacle : false,
+        isSpawn : true
+    }
+}
 var layers = {
     "lvl1" : 
         ((context) => {
@@ -496,26 +519,50 @@ var layers = {
         let isVisible = true;
         //the tbd sections represent the x and y positions, which will be determined based on position in array
         
-        let back = new Brick(context, 100, 100, 25, 25, "#EAEAEA", isVisible, false, false);
-        let red = new Brick(context, 100, 100, 25, 25, "#BB3030", isVisible, isObstacle, false);
-        let purple = new Brick(context, 100, 100, 25, 25, "#950DEC", isVisible, isObstacle, false);
-        let yellow = new Brick(context, 100, 100, 25, 25, "#FFFF00", isVisible, isObstacle, false);
-        let gray = new Brick(context, 100, 100, 25, 25, "#808080", isVisible, false, isSpawn);
 
-        let baseZone = new Zone(0, 0, 32, 29, back);
-        let redZone = new Zone(0, 10, 6, 9, red)
-        let purpleZone = new Zone(26, 10, 6, 9, purple)
-        let yellowZone = new Zone(13, 10, 6, 9, yellow)
-        let spawnZone1 = new Zone(15, 0, 2, 1, gray)
-        let spawnZone2 = new Zone(15, 28, 2, 1, gray)
-        let createUsingZone = Array(5).fill(null);
+        //Define the size, color and behavior of a brick. Position is negligible here
+        let back = new Brick(context, 100, 100, 25, 25, "#EAEAEA", behavior.scene);
+        let red = new Brick(context, 100, 100, 25, 25, "#BB3030", behavior.sector);
+        let purple = new Brick(context, 100, 100, 25, 25, "#950DEC", behavior.sector);
+        let yellow = new Brick(context, 100, 100, 25, 25, "#FFFF00", behavior.sector);
+        let gray = new Brick(context, 100, 100, 25, 25, "#808080", behavior.spawn);
 
-        let layout1 = baseZone.addZone(redZone)
-        let layout2 = (new Zone(...createUsingZone, layout1)).addZone(purpleZone);
-        let layout3 = (new Zone(...createUsingZone, layout2)).addZone(spawnZone1);
-        let layout4 = (new Zone(...createUsingZone, layout3)).addZone(spawnZone2);
-        let layout5 = (new Zone(...createUsingZone, layout4)).addZone(yellowZone);
-        return layout5;
+        //Define the size and position and the type of brick used to create zones and add to the zones array
+        let zones = [];
+        zones.push(new Zone(0, 0, 32, 29, back));
+        zones.push(new Zone(0, 10, 6, 9, red))
+        zones.push(new Zone(26, 10, 6, 9, purple))
+        zones.push(new Zone(13, 10, 6, 9, yellow))
+        zones.push(new Zone(15, 0, 2, 1, gray))
+        zones.push(new Zone(15, 28, 2, 1, gray))
+
+        //Reduce is used access each zone in the zones array, with a goal of adding all together the values of the layout Arrays within each
+        //one class defined. In order to create a zone without having to dictate the position, dimentions and brick type within the constructor,
+        //CreateNullParameters is used to spread null values in the zones constructor so that an else condition may be triggered. This allows for 
+        //bootleg overloading that allows the constructor for multiuse.
+
+        //Upon first iteration of the reduce function, oldLayout represents the very first Zone added and must be immediately converted to an 
+        //array layout. Then from that oldLayout we make a Zone object to soon add other Zones together. the result of that is a array layout.
+        //then the cycle contines until all zones have been fused
+        let createNullParameters = Array(5).fill(null);
+        let layoutFullySuperimposed = zones.reduce((oldLayout, newZone, idx) => { 
+             
+            oldLayout = oldLayout.getLayout === undefined ? oldLayout : oldLayout.getLayout()
+            let zoneFromFormerLayout = new Zone(...createNullParameters, oldLayout)
+            return zoneFromFormerLayout.addZone(newZone);
+        })
+
+        return layoutFullySuperimposed
+
+
+
+        // layout0 = baseZone.getZone()
+        // let layout1 = (new Zone(...createUsingZone, layout0)).addZone(redZone);
+        // let layout2 = (new Zone(...createUsingZone, layout1)).addZone(purpleZone);
+        // let layout3 = (new Zone(...createUsingZone, layout2)).addZone(spawnZone1);
+        // let layout4 = (new Zone(...createUsingZone, layout3)).addZone(spawnZone2);
+        // let layout5 = (new Zone(...createUsingZone, layout4)).addZone(yellowZone);
+        // return layout5;
     })
 }
 
@@ -527,8 +574,7 @@ window.onload = () => {
     canvasContext = canvas.getContext('2d');
     var framesPerSecond = 30;
     setInterval(drawCode, 1000/framesPerSecond);
-    //canvas.addEventListener('mousemove', updateMousePos)
-    //brickReset();
+    canvas.addEventListener('mousemove', updateMousePos)
 }
 
 
@@ -540,6 +586,7 @@ var drawCode = () => {
         pendingCircleInitialization = false;
     }
     displayCircles(circleRepository)
+    displayMouseCoordinates()
 }
 
 var createWindow = () => {
@@ -597,9 +644,10 @@ var directionRandomization = () => {
 }
 
 var displayMouseCoordinates = () => {
-    canvasContext.font = "30px Arial";
+    canvasContext.font = "10px Arial";
+    canvasContext.fillStyle = "#0E0EFF";
     canvasContext.fillText(`(${mouseX},${mouseY})`, mouseX, mouseY)
-    canvasContext.fillStyle = "e0e0FF";
+    
 }
 
 
