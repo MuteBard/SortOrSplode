@@ -264,7 +264,7 @@ class Circle extends Entity{
         }
         if(distance < distanceRange.max && this.invulerable == false){ 
             this.invulerableSwitch() 
-            this.drawLinesBetween(entity)
+            this.drawLinesBetween(entity.trueCenterX, entity.trueCenterY)
             //determine sides so that we can dicttate the proper way to bounce off
             let selfLeftSide = this.x - this.radius
             let selfTopSide = this.y - this.radius
@@ -350,6 +350,14 @@ class Circle extends Entity{
 
     }
 
+    // isInteractingWithMouse(mouse){
+    //     let distance = this.getDistance(this.x, this.y, mouse.x, mouse.y)
+
+    //     if(distance <= this.radius ){
+    //         mouse.holding = this
+    //     }
+    // }
+
     getDistance(x1,y1,x2,y2){
         //get the center of the entity
         let calcX = (x1 - x2);
@@ -363,9 +371,9 @@ class Circle extends Entity{
         return Math.sqrt(powX + powY)
     }
 
-    beAwareOf(layer){
+    beAwareOfBricks(layer){
         let collision = false
-        layer.map(brick => {
+        layer.forEach(brick => {
             //brick is no longer a class but a regular object
             if(brick.visible == true && brick.obstacle == true){
                 this.isCollildingWith(brick)
@@ -373,12 +381,22 @@ class Circle extends Entity{
         })
     }
 
+    beAwareOfMouse(mouse){
+        if(mouse.pressed == true){
+            this.isInteractingWithMouse(mouse)
+        }
+        this.drawLinesBetween(mouse.x, mouse.y)
+        
+    }
 
-    drawLinesBetween(entity){
+
+
+
+    drawLinesBetween(entityX, entityY){
         this.Context.strokeStyle = "#0000FF";
         this.Context.beginPath();
         this.Context.moveTo(super.X, super.Y);
-        this.Context.lineTo(entity.trueCenterX, entity.trueCenterY);
+        this.Context.lineTo(entityX, entityY);
         this.Context.stroke();
     }
 
@@ -402,24 +420,6 @@ class Circle extends Entity{
         if(this.y > canvas.height){
             this.ballSpeedY *= -1; 
         }
-    
-        // var paddleTopEdge = canvas.height - PADDLE_DIST_FROM_EDGE - 15;
-        // var paddleBottomEdge = paddleTopEdge + PADDLE_HEIGHT;
-        // var paddleLeftEdge = paddleX;
-        // var paddleRightEdge = paddleLeftEdge + PADDLE_WIDTH;
-       
-
-    
-        //add direct if hit paddle
-        // else if(trueCenter > paddleTopEdge && ballY < paddleBottomEdge && ballX > paddleLeftEdge && ballX < paddleRightEdge ){
-        //     ballSpeedY *= -1; 
-    
-            //we want the user to have more control over the direction of the ball
-            //.35 is used to buffer the severity of how forceful the ball is thrown
-            // var centerOfPaddle = paddleX + PADDLE_WIDTH / 2;
-            // var ballDistFromPaddle = ballX - centerOfPaddle;
-            // ballSpeedX = ballDistFromPaddle * 0.35;
-        // }
     }
 
     
@@ -479,16 +479,20 @@ class Zone{
                 this.layout[rowIdx] = rowData;
             }
         })
-         return this.layout;
+         return this;
     }
 }
 
 
+let mouse = {
+    x : 0 ,
+    y : 0,
+    pressed : false,
+    holding : null
+}
 
-var mouseX = 0; 
-var mouseY = 0;
 var pendingCircleInitialization = true;
-circleRepository = Array(1).fill(new Circle());
+circleRepository = Array(0).fill(new Circle());
 var spawns = [];
 var behavior = {
     scene : {
@@ -531,23 +535,9 @@ var layers = {
         zones.push(new Zone(15, 0, 2, 1, gray))
         zones.push(new Zone(15, 28, 2, 1, gray))
 
-        //Reduce is used access each zone in the zones array, with a goal of adding all together the values of the layout Arrays within each
-        //one class defined. In order to create a zone without having to dictate the position, dimentions and brick type within the constructor,
-        //CreateNullParameters is used to spread null values in the zones constructor so that an else condition may be triggered. This allows for 
-        //bootleg overloading that allows the constructor for multiuse.
-
-        //Upon first iteration of the reduce function, oldLayout represents the very first Zone added and must be immediately converted to an 
-        //array layout. Then from that oldLayout we make a Zone object to soon add other Zones together. the result of that is a array layout.
-        //then the cycle contines until all zones have been fused
-        let createNullParameters = Array(5).fill(null);
-        let layoutFullySuperimposed = zones.reduce((oldLayout, newZone, idx) => { 
-             
-            oldLayout = oldLayout.getLayout === undefined ? oldLayout : oldLayout.getLayout()
-            let zoneFromFormerLayout = new Zone(...createNullParameters, oldLayout)
-            return zoneFromFormerLayout.addZone(newZone);
-        })
-
-        return layoutFullySuperimposed
+        // let createNullParameters = Array(5).fill(null);
+        let ZonesFullySuperimposed = zones.reduce((oldZone, newZone) => oldZone.addZone(newZone))
+        return ZonesFullySuperimposed.getLayout()
 
     })
 }
@@ -561,6 +551,7 @@ window.onload = () => {
     var framesPerSecond = 30;
     setInterval(drawCode, 1000/framesPerSecond);
     canvas.addEventListener('mousemove', updateMousePos)
+    canvas.addEventListener('mousedown', toggleDrag)
 }
 
 
@@ -580,7 +571,6 @@ var createWindow = () => {
     canvasContext.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-
 var displayLayers = () => {
     let layout = layers["lvl1"]
     generateLayout = new GenerateLayer(layout(canvasContext));
@@ -588,6 +578,7 @@ var displayLayers = () => {
     spawns = generateLayout.SavedSpawns
     if(pendingCircleInitialization === false){
         collisionWithBricksActive()
+        interactionWithMouseActive()
     } 
 }
 
@@ -601,7 +592,13 @@ var displayCircles = (circleRepository) =>{
 
 var collisionWithBricksActive = () => {
     circleRepository.map(circle => {
-        circle.beAwareOf(generateLayout.SavedBricks)
+        circle.beAwareOfBricks(generateLayout.SavedBricks)
+    })
+}
+
+var interactionWithMouseActive = () => {
+    circleRepository.map(circle => {
+        circle.beAwareOfMouse(mouse)
     })
 }
 
@@ -632,10 +629,13 @@ var directionRandomization = () => {
 var displayMouseCoordinates = () => {
     canvasContext.font = "10px Arial";
     canvasContext.fillStyle = "#0E0EFF";
-    canvasContext.fillText(`(${mouseX},${mouseY})`, mouseX, mouseY)
+    canvasContext.fillText(`(${mouse.x},${mouse.y})`, mouse.x, mouse.y)
     
 }
 
+var toggleDrag = () => {
+     mouse.pressed = mouse.pressed == false ? true : false
+}
 
 
 //e is the expected argument for an event reciever
@@ -646,8 +646,8 @@ var updateMousePos = (e) => {
     //get access to the number of pixels the content of a <div> element is scrolled horizontally and vertically
     //https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_element_scrollleft
     var root = document.documentElement;
-    mouseX = e.clientX - rect.left - root.scrollLeft;
-    mouseY = e.clientY - rect.top - root.scrollTop;
+    mouse.x = e.clientX - rect.left - root.scrollLeft;
+    mouse.y = e.clientY - rect.top - root.scrollTop;
     //center the cursor to the center of the paddle
 }
 
