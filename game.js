@@ -264,7 +264,7 @@ class Circle extends Entity{
         }
         if(distance < distanceRange.max && this.invulerable == false){ 
             this.invulerableSwitch() 
-            this.drawLinesBetween(entity.trueCenterX, entity.trueCenterY)
+            // this.drawLinesBetween(entity.trueCenterX, entity.trueCenterY)
             //determine sides so that we can dicttate the proper way to bounce off
             let selfLeftSide = this.x - this.radius
             let selfTopSide = this.y - this.radius
@@ -350,13 +350,17 @@ class Circle extends Entity{
 
     }
 
-    // isInteractingWithMouse(mouse){
-    //     let distance = this.getDistance(this.x, this.y, mouse.x, mouse.y)
+    isInteractingWithMouse(mouse){
+        let distance = this.getDistance(this.x, this.y, mouse.x, mouse.y)
 
-    //     if(distance <= this.radius ){
-    //         mouse.holding = this
-    //     }
-    // }
+        if(distance <= this.radius && mouse.holding == null){
+            mouse.holding = this
+        }
+        if(mouse.holding === this){
+            this.x = mouse.x
+            this.y = mouse.y
+        }
+    }
 
     getDistance(x1,y1,x2,y2){
         //get the center of the entity
@@ -385,7 +389,7 @@ class Circle extends Entity{
         if(mouse.pressed == true){
             this.isInteractingWithMouse(mouse)
         }
-        this.drawLinesBetween(mouse.x, mouse.y)
+        // this.drawLinesBetween(mouse.x, mouse.y)
         
     }
 
@@ -492,7 +496,7 @@ let mouse = {
 }
 
 var pendingCircleInitialization = true;
-circleRepository = Array(0).fill(new Circle());
+var circleRepository = Array(10).fill(new Circle());
 var spawns = [];
 var behavior = {
     scene : {
@@ -514,33 +518,36 @@ var behavior = {
 var layers = {
     "lvl1" : 
         ((context) => {
-        //Define the size, color and behavior of a brick. Position is negligible here
-        let back = new Brick(context, 25, 25, "#EAEAEA", behavior.scene);
-        let red = new Brick(context, 25, 25, "#BB3030", behavior.sector);
-        let purple = new Brick(context, 25, 25, "#950DEC", behavior.sector);
-        let yellow = new Brick(context, 25, 25, "#FFFF00", behavior.sector);
-        let orange = new Brick(context, 25, 25, "#FF5733", behavior.scene)
-        let gray = new Brick(context, 25, 25, "#808080", behavior.spawn);
+
+        //Define the size, color and behavior of a brick
+        var bricks = [
+            new Brick(context, 25, 25, "#EAEAEA", behavior.scene),
+            new Brick(context, 25, 25, "#FF5733", behavior.scene),
+            new Brick(context, 25, 25, "#BB3030", behavior.sector),
+            new Brick(context, 25, 25, "#950DEC", behavior.sector),
+            new Brick(context, 25, 25, "#FFFF00", behavior.sector),
+            new Brick(context, 25, 25, "#808080", behavior.spawn)
+        ]
 
         //Define the size and position and the type of brick used to create zones and add to the zones array
         let zones = [];
-        zones.push(new Zone(0, 0, 32, 29, back));
+        zones.push(new Zone(0, 0, 32, 29, bricks[0]));
 
-        zones.push(new Zone(0, 9, 8, 11, orange))
-        zones.push(new Zone(1, 10, 6, 9, red))
+        zones.push(new Zone(0, 9, 8, 11, bricks[1]))
+        zones.push(new Zone(1, 10, 6, 9, bricks[2]))
         
-        zones.push(new Zone(24, 9, 8, 11, orange))
-        zones.push(new Zone(25, 10, 6, 9, purple))
+        zones.push(new Zone(24, 9, 8, 11, bricks[1]))
+        zones.push(new Zone(25, 10, 6, 9, bricks[3]))
 
-        zones.push(new Zone(15, 0, 2, 1, gray))
-        zones.push(new Zone(15, 28, 2, 1, gray))
+        zones.push(new Zone(15, 0, 2, 1, bricks[5]))
+        zones.push(new Zone(15, 28, 2, 1, bricks[5]))
 
+        //merge all the bricks together
         let ZonesFullySuperimposed = zones.reduce((oldZone, newZone) => oldZone.addZone(newZone))
         return ZonesFullySuperimposed.getLayout()
 
     })
 }
-
 
 window.onload = () => {
     //this is so that we can access the width and the height
@@ -634,6 +641,9 @@ var displayMouseCoordinates = () => {
 
 var toggleDrag = () => {
      mouse.pressed = mouse.pressed == false ? true : false
+     if(mouse.pressed == false){
+        mouse.holding = null  
+     }
 }
 
 
