@@ -287,7 +287,7 @@ class Circle extends Entity{
                 }
 
                 distanceRange = {
-                    max : 58,
+                    max : 65,
                     min : 30
                 }
 
@@ -803,7 +803,7 @@ var initializeSpawns = () => {
         let dirY = directionRandomization()
         let colorObj = colorRandomization()
 
-        circle = new Circle(canvasContext, x, y, dirX, dirY, 20, colorObj)
+        circle = new Circle(canvasContext, x, y, dirX, dirY, 30, colorObj)
         return circle
     })
 }
