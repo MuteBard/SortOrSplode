@@ -109,16 +109,23 @@ class Rectangle extends Entity{
 class Brick extends Rectangle{
     idX = 0;
     idY = 0;  
-    gap = true;
+    gap = false;
     visible;
     obstacle;
     spawn;
+    flatColor;
+
     
-    constructor(context, width, height, color, behaviorType){
-        super(context, null, null, width, height, color)
+    constructor(context, colors, behaviorType){
+        super(context, null, null, 25, 25, colors != null ? colors.vibrant : null)
+        this.flatColor = colors != null ? colors.flat : null;
         this.visible = behaviorType.isVisible;
         this.obstacle = behaviorType.isObstacle;
-        this.spawn = behaviorType.isSpawn
+        this.spawn = behaviorType.isSpawn;
+    }
+
+    get flatColor(){
+        return this.flatColor;
     }
 
     set IdX(idX){
@@ -184,10 +191,13 @@ class Circle extends Entity{
     trueCenterY;
     radius;
     invulerable = false;
+    flatColor;
+    incapacitated = false
+    count = 0;
 
-    constructor(context, x, y, dirX, dirY, radius, color){
-        super(context, x, y, color)
-        this.color = color;
+    constructor(context, x, y, dirX, dirY, radius, colors ){
+        super(context, x, y, colors != null ? colors.vibrant : null)
+        this.flatColor = colors != null ? colors.flat : null;
         this.trueCenterX = x;
         this.trueCenterY = y;
         this.radius = radius;
@@ -199,104 +209,133 @@ class Circle extends Entity{
         this.invulerable = true;
         setTimeout(() => this.invulerable = false, 100);  
     }
+    hyperSwitch(){
+        this.ballSpeedX = 2
+        this.ballSpeedY = 2
+        if(this.count % 4 == 0){
+            this.ballSpeedX *= -1
+            this.ballSpeedY *= -1
+        }else if(this.count % 4 == 1){
+            this.ballSpeedX *= -1
+        }else if(this.count % 4 == 2){
+            this.ballSpeedY *= -1
+        }
+        this.count++;
+    }
 
+    incapacitatedSwitch(){
+        this.incapacitated = true
+        this.ballSpeedX = 1 
+        this.ballSpeedY = 1
+
+            if(this.count % 4 == 0){
+                this.ballSpeedX *= -1
+                this.ballSpeedY *= -1
+            }else if(this.count % 4 == 1){
+                this.ballSpeedX *= -1
+            }else if(this.count % 4 == 2){
+                this.ballSpeedY *= -1
+            }
+        this.count++;
+        
+    }
+    
     get Radius(){
         return this.radius;
     }
+
+    get flatColor(){
+        return this.flatColor;
+    }
     
     isCollildingWith(entity){
-        let distance = this.getDistance(this.x, this.y, entity.trueCenterX, entity.trueCenterY)
+         if(this.incapacitated != true){
+             
+            let distance = this.getDistance(this.x, this.y, entity.trueCenterX, entity.trueCenterY)
+            let distanceRange = {
+                max : 52,
+                min : 48 
+            }
+            if(distance < distanceRange.max && this.invulerable == false){ 
+                this.invulerableSwitch() 
+                // this.drawLinesBetween(entity.trueCenterX, entity.trueCenterY)
+                //determine sides so that we can dicttate the proper way to bounce off
+                let selfLeftSide = this.x - this.radius
+                let selfTopSide = this.y - this.radius
+                let selfRightSide = this.x + this.radius
+                let selfBottomSide = this.y + this.radius
+
+                let selfTopLeftCornerPoint = {
+                    x : selfLeftSide,
+                    y : selfTopSide
+                }
+                let selfTopRightCornerPoint = {
+                    x : selfRightSide,
+                    y : selfTopSide
+                }
+                let selfBottomLeftCornerPoint = {
+                    x : selfLeftSide,
+                    y : selfBottomSide
+                }
+                let selfBottomRightCornerPoint = {
+                    x : selfRightSide,
+                    y : selfBottomSide
+                }
+                let entityCenterPoint = {
+                    x : entity.trueCenterX,
+                    y : entity.trueCenterY
+                }
+
+                distanceRange = {
+                    max : 58,
+                    min : 30
+                }
+
+                let shouldMoveRIGHT =  
+                    this.getDistance(selfTopLeftCornerPoint.x, selfTopLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max &&
+                    this.getDistance(selfBottomLeftCornerPoint.x, selfBottomLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max //&&
+                    // this.getDistance(selfTopLeftCornerPoint.x, selfTopLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min &&
+                    // this.getDistance(selfBottomLeftCornerPoint.x, selfBottomLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min 
+
+                let shouldMoveDOWN = 
+                    this.getDistance(selfTopLeftCornerPoint.x, selfTopLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max &&
+                    this.getDistance(selfTopRightCornerPoint.x, selfTopRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max //&&
+                    // this.getDistance(selfTopLeftCornerPoint.x, selfTopLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min &&
+                    // this.getDistance(selfTopRightCornerPoint.x, selfTopRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min    
         
-        let distanceRange = {
-            max : 52,
-            min : 48 
-        }
-        if(distance < distanceRange.max && this.invulerable == false){ 
-            this.invulerableSwitch() 
-            // this.drawLinesBetween(entity.trueCenterX, entity.trueCenterY)
-            //determine sides so that we can dicttate the proper way to bounce off
-            let selfLeftSide = this.x - this.radius
-            let selfTopSide = this.y - this.radius
-            let selfRightSide = this.x + this.radius
-            let selfBottomSide = this.y + this.radius
+                let shouldMoveLEFT = 
+                    this.getDistance(selfTopRightCornerPoint.x, selfTopRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max &&
+                    this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max //&&
+                    // this.getDistance(selfTopRightCornerPoint.x, selfTopRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min &&
+                    // this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min 
+            
+                let shouldMoveUP = 
+                    this.getDistance(selfBottomLeftCornerPoint.x, selfBottomLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max &&
+                    this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max //&&
+                    // this.getDistance(selfBottomLeftCornerPoint.x, selfBottomLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min &&
+                    // this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min 
 
-            let selfTopLeftCornerPoint = {
-                x : selfLeftSide,
-                y : selfTopSide
-            }
-            let selfTopRightCornerPoint = {
-                x : selfRightSide,
-                y : selfTopSide
-            }
-            let selfBottomLeftCornerPoint = {
-                x : selfLeftSide,
-                y : selfBottomSide
-            }
-            let selfBottomRightCornerPoint = {
-                x : selfRightSide,
-                y : selfBottomSide
-            }
-            let entityCenterPoint = {
-                x : entity.trueCenterX,
-                y : entity.trueCenterY
-            }
+                //if a rectangle find sides
+                if(entity.radius == null){
+                    // add direction if sides hit
+                    if(shouldMoveLEFT == true){
+                        this.ballSpeedX *= -1;
+                    }
+                    if(shouldMoveRIGHT == true){
+                        this.ballSpeedX *= -1; 
+                    }
+                    if(shouldMoveUP == true){
+                        this.ballSpeedY *= -1;
+                    }
+                    if(shouldMoveDOWN == true){
+                        this.ballSpeedY *= -1; 
+                    }
 
-            distanceRange = {
-                max : 58,
-                min : 30
-            }
-
-            let shouldMoveRIGHT =  
-                this.getDistance(selfTopLeftCornerPoint.x, selfTopLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max &&
-                this.getDistance(selfBottomLeftCornerPoint.x, selfBottomLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max //&&
-                // this.getDistance(selfTopLeftCornerPoint.x, selfTopLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min &&
-                // this.getDistance(selfBottomLeftCornerPoint.x, selfBottomLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min 
-
-            let shouldMoveDOWN = 
-                this.getDistance(selfTopLeftCornerPoint.x, selfTopLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max &&
-                this.getDistance(selfTopRightCornerPoint.x, selfTopRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max //&&
-                // this.getDistance(selfTopLeftCornerPoint.x, selfTopLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min &&
-                // this.getDistance(selfTopRightCornerPoint.x, selfTopRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min    
-       
-            let shouldMoveLEFT = 
-                this.getDistance(selfTopRightCornerPoint.x, selfTopRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max &&
-                this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max //&&
-                // this.getDistance(selfTopRightCornerPoint.x, selfTopRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min &&
-                // this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min 
-           
-            let shouldMoveUP = 
-                this.getDistance(selfBottomLeftCornerPoint.x, selfBottomLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max &&
-                this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) < distanceRange.max //&&
-                // this.getDistance(selfBottomLeftCornerPoint.x, selfBottomLeftCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min &&
-                // this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min 
-
-
-            //if a rectangle find sides
-            if(entity.radius == null){
-                // let otherLeftSide = entity.x
-                // let otherTopSide = entity.y
-                // let otherRightSide = entity.x + entity.width
-                // let otherBottomSide = entity.y + entity.height
-
-                // add direction if sides hit
-                if(shouldMoveLEFT == true){
-                    this.ballSpeedX *= -1;
                 }
-                if(shouldMoveRIGHT == true){
-                    this.ballSpeedX *= -1; 
-                }
-                if(shouldMoveUP == true){
-                    this.ballSpeedY *= -1;
-                }
-                if(shouldMoveDOWN == true){
-                    this.ballSpeedY *= -1; 
-                }
-
-            }
-            return true;
+                return true;
+            } 
         }
         return false;
-
     }
 
     isInteractingWithMouse(mouse){
@@ -342,9 +381,6 @@ class Circle extends Entity{
         
     }
 
-
-
-
     drawLinesBetween(entityX, entityY){
         this.Context.strokeStyle = "#0000FF";
         this.Context.beginPath();
@@ -352,8 +388,6 @@ class Circle extends Entity{
         this.Context.lineTo(entityX, entityY);
         this.Context.stroke();
     }
-
-
 
     move(canvas){
         //add movement
@@ -374,7 +408,6 @@ class Circle extends Entity{
             this.ballSpeedY *= -1; 
         }
     }
-
     
     display(){
         this.Context.fillStyle = super.Color;
@@ -392,6 +425,9 @@ class Zone{
     height;
     brick;
     layout;
+    count;
+    explode;
+    flatColor;
 
     constructor(x, y, width, height, brick, layout){
         if(layout == null){
@@ -399,22 +435,38 @@ class Zone{
             this.y = y;
             this.width = width;
             this.height = height;
-            this.brick = brick;
             let row = Array(width).fill(brick);
-            this.layout = Array(height).fill(row)
+            this.layout = Array(height).fill(row);
+            this.brick = brick;
+            this.flatColor = brick.flatColor;
+            this.explode = false;
         }
         else if (x === null && y === null && width === null, height === null, brick === null){
             this.x = 0;
             this.y = 0;
-            this.width = layout[0].length
-            this.height = layout.length
-            this.brick = null
-            this.layout = layout
+            this.width = layout[0].length;
+            this.height = layout.length;
+            this.layout = layout;
+            this.brick = null;
+            this.flatColor = null;
+            this.explode = false;
         }
     }
 
-    getLayout(){
+    get Layout(){
         return this.layout;
+    }
+
+    get Count(){
+        return this.explode ? 0 : this.count;
+    }
+
+    get FlatColor(){
+        return this.flatColor;
+    }
+
+    get HasExploded(){
+        return this.explode;
     }
 
     //merges two zones together by taking in a zone as parameter and traverses the basezone's array to locate the proper
@@ -433,6 +485,36 @@ class Zone{
             }
         })
          return this;
+    }
+
+
+    zoneWestSide(){
+        return this.x * this.brick.width
+    }
+    zoneEastSide(){
+        return this.zoneWestSide() + this.width * this.brick.width
+    }
+    zoneNorthSide(){
+        return this.y * this.brick.height
+    }
+    zoneSouthSide(){
+        return this.zoneNorthSide() + this.height * this.brick.height
+    }
+
+    beAwareOfCircles(circleRepository){
+        let buffer = 0;
+        let circleWithinZone = circleRepository.filter((circle) =>{
+            let circleXInZone = (circle.X > this.zoneWestSide()) && (circle.X < this.zoneEastSide())
+            let circleYInZone = (circle.Y > this.zoneNorthSide()) && (circle.Y < this.zoneSouthSide())
+            if(circleXInZone && circleYInZone){
+                circle.incapacitatedSwitch()
+                if (circle.flatColor !== this.flatColor){
+                    this.explode = true;
+                }
+            }
+            return circleXInZone && circleYInZone
+        })
+        this.count = circleWithinZone.length
     }
 }
 
@@ -482,6 +564,7 @@ class GenerateLayer{
         return this.savedSpawns
     }
 }
+const font = "3em Factory";
 var circleRepository = Array(10).fill(new Circle());
 var pendingCircleInitialization = true;
 var spawns = [];
@@ -500,7 +583,66 @@ var behavior = {
         isVisible : true,
         isObstacle : false,
         isSpawn : true
+    },
+    wall : {
+        isVisible : true,
+        isObstacle : true,
+        isSpawn : false
+    }    
+}
+
+var sectors = [];
+var scoreboards = []
+var colors = {
+    brick :{
+        gray : {
+            vibrant : "#EAEAEA",
+            flat : "gray"
+        },
+        red : {
+            vibrant : "#BB3030",
+            flat : "red"
+        },
+        orange : {
+            vibrant : "#FF5733",
+            flat : "orange"
+        },
+        purple : {
+            vibrant : "#950DEC",
+            flat : "purple"
+        },
+        yellow : {
+            vibrant : "#FFFF00",
+            flat : "yellow"
+        },
+        darkGray : {
+            vibrant : "#808080",
+            flat : "darkGray"
+        },
+        tan : {
+            vibrant : "#D2B48C",
+            flat : "tan"
+        },
+        shadow : {
+            
+            vibrant : "#21262B",
+            flat : "shadow"
+        }
+    },
+    circle:{
+        red : {
+            vibrant : "#FF0000",
+            flat : "red"
+        },
+        blue : {
+            vibrant : "#0000FF",
+            flat : "purple"
+        },
     }
+
+    
+    
+
 }
 var layers = {
     "lvl1" : 
@@ -508,30 +650,63 @@ var layers = {
 
         //Define the size, color and behavior of a brick
         var bricks = [
-            new Brick(context, 25, 25, "#EAEAEA", behavior.scene),
-            new Brick(context, 25, 25, "#FF5733", behavior.scene),
-            new Brick(context, 25, 25, "#BB3030", behavior.sector),
-            new Brick(context, 25, 25, "#950DEC", behavior.sector),
-            new Brick(context, 25, 25, "#FFFF00", behavior.sector),
-            new Brick(context, 25, 25, "#808080", behavior.spawn)
+            new Brick(context, colors.brick.gray, behavior.scene),
+            new Brick(context, colors.brick.yellow, behavior.scene),
+            new Brick(context, colors.brick.red, behavior.sector),
+            new Brick(context, colors.brick.purple, behavior.sector),
+            new Brick(context, colors.brick.yellow, behavior.sector),
+            new Brick(context, colors.brick.darkGray, behavior.spawn),
+            new Brick(context, colors.brick.tan, behavior.wall),
+            new Brick(context, colors.brick.shadow, behavior.wall),
+            new Brick(context, colors.brick.tan, behavior.scene),
+            new Brick(context, colors.brick.shadow, behavior.wall)
         ]
 
         //Define the size and position and the type of brick used to create zones and add to the zones array
         let zones = [];
         zones.push(new Zone(0, 0, 32, 29, bricks[0]));
+        
+        let tanWallWidth = 13;
+        let tanWallHeight = 5;
+        let scorboardWidth = 4;
+        let scoreboardHeight = 3;
+        zones.push(new Zone(0, 0, tanWallWidth, tanWallHeight, bricks[8]));
+        zones.push(new Zone(0, 0, tanWallWidth - 1, tanWallHeight - 1, bricks[6]));
+        let scoreboard1 = new Zone(1, 1, scorboardWidth, scoreboardHeight, bricks[9])
+        zones.push(scoreboard1)
+        
+        zones.push(new Zone(19, 0, tanWallWidth, tanWallHeight, bricks[8]));
+        zones.push(new Zone(20, 0, tanWallWidth - 1, tanWallHeight - 1, bricks[6]));
+        let scoreboard2 = new Zone(27, 1, scorboardWidth, scoreboardHeight, bricks[9])
+        zones.push(scoreboard2)
+
+        zones.push(new Zone(0, 24, tanWallWidth, tanWallHeight, bricks[8]));
+        zones.push(new Zone(0, 25, tanWallWidth - 1, tanWallHeight - 1, bricks[6]));
+
+        zones.push(new Zone(19, 24, tanWallWidth, tanWallHeight, bricks[8]));
+        zones.push(new Zone(20, 25, tanWallWidth - 1, tanWallHeight - 1, bricks[6]));
+
+        // zones.push(new Zone(19, 24,   13, 5, bricks[8]));
+        // zones.push(new Zone(20, 25, tanWallWidth, tanWallHeight, bricks[6]));
 
         zones.push(new Zone(0, 9, 8, 11, bricks[1]))
-        zones.push(new Zone(1, 10, 6, 9, bricks[2]))
+        let redSector = new Zone(-1, 10, 8, 9, bricks[2])
+        zones.push(redSector)
         
         zones.push(new Zone(24, 9, 8, 11, bricks[1]))
-        zones.push(new Zone(25, 10, 6, 9, bricks[3]))
+        let blueSector = new Zone(25, 10, 9, 9, bricks[3])
+        zones.push(blueSector)
 
         zones.push(new Zone(15, 0, 2, 1, bricks[5]))
         zones.push(new Zone(15, 28, 2, 1, bricks[5]))
 
+        
+        scoreboards = [scoreboard1, scoreboard2]
+        sectors = [redSector, blueSector]
+
         //merge all the bricks together
         let ZonesFullySuperimposed = zones.reduce((oldZone, newZone) => oldZone.addZone(newZone))
-        return ZonesFullySuperimposed.getLayout()
+        return ZonesFullySuperimposed.Layout
 
     })
 }
@@ -551,6 +726,7 @@ window.onload = () => {
     setInterval(drawCode, 1000/framesPerSecond);
     canvas.addEventListener('mousemove', updateMousePos)
     canvas.addEventListener('mousedown', toggleDrag)
+    canvas.addEventListener('mouseup', toggleDrag)
 }
 
 var drawCode = () => {
@@ -562,6 +738,7 @@ var drawCode = () => {
     }
     displayCircles(circleRepository)
     implementCircleInteraction()
+    displayCountsAndScores()
     displayMouseCoordinates()
 }
 
@@ -601,6 +778,22 @@ var interactionWithMouseActive = () => {
     })
 }
 
+var displayCountsAndScores = () => {
+    sectors.forEach(sector => sector.beAwareOfCircles(circleRepository))
+    var positions = scoreboards.map(scoreboard => {
+        ScoreCoordinates = {
+            x : scoreboard.zoneWestSide() + ((scoreboard.width - 3) * scoreboard.brick.width) - 1.5,
+            y : scoreboard.zoneNorthSide() + ((scoreboard.height - 1) * scoreboard.brick.height) + 5
+        }
+        return ScoreCoordinates;
+    })
+    sectors.forEach((sector, idx) => {
+        canvasContext.font = font;
+        canvasContext.fillStyle = sector.flatColor;
+        canvasContext.fillText(sector.Count, positions[idx].x, positions[idx].y)
+    })   
+}
+
 var initializeSpawns = () => {
     return circleRepository.map(circle => {
         index = Math.floor((Math.random() * spawns.length));
@@ -608,17 +801,17 @@ var initializeSpawns = () => {
         let y = spawns[index].y
         let dirX = directionRandomization()
         let dirY = directionRandomization()
-        let color = colorRandomization()
+        let colorObj = colorRandomization()
 
-        circle = new Circle(canvasContext, x, y, dirX, dirY, 20, color)
+        circle = new Circle(canvasContext, x, y, dirX, dirY, 20, colorObj)
         return circle
     })
 }
 
 var colorRandomization = () => {
     colorId = Math.floor((Math.random() * 2));
-    if(colorId === 0) return "#FF0000"
-    else if(colorId === 1) return "#0000FF"
+    if(colorId === 0) return colors.circle.red
+    else if(colorId === 1) return colors.circle.blue
 }
 
 var directionRandomization = () => {
@@ -627,9 +820,8 @@ var directionRandomization = () => {
 
 var displayMouseCoordinates = () => {
     canvasContext.font = "10px Arial";
-    canvasContext.fillStyle = "#0E0EFF";
-    canvasContext.fillText(`(${mouse.x},${mouse.y})`, mouse.x, mouse.y)
-    
+    canvasContext.fillStyle = "#007700";
+    canvasContext.fillText(`(${mouse.x},${mouse.y})`, mouse.x, mouse.y)   
 }
 
 var toggleDrag = () => {

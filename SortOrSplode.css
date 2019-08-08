@@ -1,0 +1,17 @@
+@font-face 
+{
+    font-family: 'Factory';
+    src: url('./CursedTimerUlil-Aznm.ttf') format('opentype')
+}
+@font-face 
+{
+    font-family: 'Factory';
+    font-weight: bold;
+    src: url('./CursedTimerUlil-Aznm.ttf') format('opentype')
+}
+
+.factoryStyle{
+    font-family : "factory";
+    font-size : 15px;
+    color : "black"
+}
