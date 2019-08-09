@@ -428,6 +428,7 @@ class Zone{
     count;
     explode;
     flatColor;
+    lastCount;
 
     constructor(x, y, width, height, brick, layout){
         if(layout == null){
@@ -440,6 +441,7 @@ class Zone{
             this.brick = brick;
             this.flatColor = brick.flatColor;
             this.explode = false;
+            this.count = 0;
         }
         else if (x === null && y === null && width === null, height === null, brick === null){
             this.x = 0;
@@ -450,6 +452,7 @@ class Zone{
             this.brick = null;
             this.flatColor = null;
             this.explode = false;
+            this.count = 0;
         }
     }
 
@@ -458,7 +461,7 @@ class Zone{
     }
 
     get Count(){
-        return this.explode ? 0 : this.count;
+        return this.explode ? 0 : this.count
     }
 
     get FlatColor(){
@@ -467,6 +470,19 @@ class Zone{
 
     get HasExploded(){
         return this.explode;
+    }
+
+    zoneWestSide(){
+        return this.x * this.brick.width
+    }
+    zoneEastSide(){
+        return this.zoneWestSide() + this.width * this.brick.width
+    }
+    zoneNorthSide(){
+        return this.y * this.brick.height
+    }
+    zoneSouthSide(){
+        return this.zoneNorthSide() + this.height * this.brick.height
     }
 
     //merges two zones together by taking in a zone as parameter and traverses the basezone's array to locate the proper
@@ -487,32 +503,21 @@ class Zone{
          return this;
     }
 
-
-    zoneWestSide(){
-        return this.x * this.brick.width
-    }
-    zoneEastSide(){
-        return this.zoneWestSide() + this.width * this.brick.width
-    }
-    zoneNorthSide(){
-        return this.y * this.brick.height
-    }
-    zoneSouthSide(){
-        return this.zoneNorthSide() + this.height * this.brick.height
-    }
-
     beAwareOfCircles(circleRepository){
         let buffer = 0;
         let circleWithinZone = circleRepository.filter((circle) =>{
-            let circleXInZone = (circle.X > this.zoneWestSide()) && (circle.X < this.zoneEastSide())
-            let circleYInZone = (circle.Y > this.zoneNorthSide()) && (circle.Y < this.zoneSouthSide())
-            if(circleXInZone && circleYInZone){
-                circle.incapacitatedSwitch()
-                if (circle.flatColor !== this.flatColor){
-                    this.explode = true;
-                }
-            }
-            return circleXInZone && circleYInZone
+
+          
+                let circleXInZone = (circle.X > this.zoneWestSide()) && (circle.X < this.zoneEastSide())
+                let circleYInZone = (circle.Y > this.zoneNorthSide()) && (circle.Y < this.zoneSouthSide())
+                if(circleXInZone && circleYInZone){
+                    circle.incapacitatedSwitch()
+                    if (circle.flatColor !== this.flatColor){
+                        this.explode = true;
+                    }
+                } 
+                return circleXInZone && circleYInZone
+                
         })
         this.count = circleWithinZone.length
     }
@@ -590,7 +595,7 @@ var behavior = {
         isSpawn : false
     }    
 }
-
+var gameStart = false;
 var sectors = [];
 var scoreboards = []
 var colors = {
@@ -718,15 +723,15 @@ let mouse = {
 }
 
 window.onload = () => {
-    //this is so that we can access the width and the height
-    canvas = document.getElementById("SOS");
-    //this is so we have access to the graphics buffer. Graphical text, lines, colors, fill, shapes
-    canvasContext = canvas.getContext('2d');
-    var framesPerSecond = 30;
-    setInterval(drawCode, 1000/framesPerSecond);
-    canvas.addEventListener('mousemove', updateMousePos)
-    canvas.addEventListener('mousedown', toggleDrag)
-    canvas.addEventListener('mouseup', toggleDrag)
+    if(gameStart === true){
+        canvas = document.getElementById("SOS");
+        canvasContext = canvas.getContext('2d');
+        var framesPerSecond = 30;
+        setInterval(drawCode, 1000/framesPerSecond);
+        canvas.addEventListener('mousemove', updateMousePos)
+        canvas.addEventListener('mousedown', toggleDrag)
+        canvas.addEventListener('mouseup', toggleDrag)
+    }
 }
 
 var drawCode = () => {
@@ -843,4 +848,17 @@ var updateMousePos = (e) => {
     //center the cursor to the center of the paddle
 }
 
+var playFFXIVImagination = () => {
+    imaginationObj = document.getElementById('imagination')
+    imaginationObj.play();
+    imaginationObj.loop = true;
+    canvasObj = document.getElementById('SOS')
+    canvasObj.width = 800;
+    canvasObj.height = 725;
+    gameStart = true;
+    beginButtonObj = document.getElementById('begin')
+    beginButtonObj.style.display = "none";
 
+    window.onload()
+    
+}
