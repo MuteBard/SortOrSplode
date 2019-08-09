@@ -190,12 +190,14 @@ class Circle extends Entity{
     trueCenterX;
     trueCenterY;
     radius;
-    invulerable = false;
+    invulerable;
     flatColor;
-    incapacitated = false
-    count = 0;
+    incapacitated;
+    count;
+    explodeTimer;
+    explodeState;
 
-    constructor(context, x, y, dirX, dirY, radius, colors ){
+    constructor(context, x, y, dirX, dirY, radius, colors, explodeTimer){
         super(context, x, y, colors != null ? colors.vibrant : null)
         this.flatColor = colors != null ? colors.flat : null;
         this.trueCenterX = x;
@@ -203,12 +205,32 @@ class Circle extends Entity{
         this.radius = radius;
         this.ballSpeedX = 5 * dirX;
         this.ballSpeedY = 5 * dirY;
+        this.invulerable = false;
+        this.incapacitated = false;
+        this.count = 0;
+        this.explodeTimerStart = explodeTimer * 1000
+        this.explodeTimer = explodeTimer;
+        this.explodeState = 0;
+    }
+
+    explodeCountdown(){
+        setInterval(() => {
+            if(this.explodeTimer < 0){
+                this.explodeState = 2;
+                this.color = "#00FFFF"
+            }else if(this.explodeTimer < 3){
+                this.explodeState = 1;
+                this.color = "#00FF00"
+            }
+            this.explodeTimer--;
+        }, 1000); 
     }
 
     invulerableSwitch(){
         this.invulerable = true;
-        setTimeout(() => this.invulerable = false, 100);  
+        setInterval(() => this.invulerable = false, 100);  
     }
+
     hyperSwitch(){
         this.ballSpeedX = 2
         this.ballSpeedY = 2
@@ -569,7 +591,7 @@ class GenerateLayer{
         return this.savedSpawns
     }
 }
-const font = "3em Factory";
+const font = "50px Factory";
 var circleRepository = Array(10).fill(new Circle());
 var pendingCircleInitialization = true;
 var spawns = [];
@@ -806,9 +828,11 @@ var initializeSpawns = () => {
         let y = spawns[index].y
         let dirX = directionRandomization()
         let dirY = directionRandomization()
+        let radius = 30;
         let colorObj = colorRandomization()
-
-        circle = new Circle(canvasContext, x, y, dirX, dirY, 30, colorObj)
+        let seconds = 10;
+        circle = new Circle(canvasContext, x, y, dirX, dirY, radius, colorObj, seconds)
+        circle.explodeCountdown() 
         return circle
     })
 }
