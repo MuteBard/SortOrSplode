@@ -1044,11 +1044,14 @@ var displayMouseCoordinates = () => {
     canvasContext.fillText(`(${mouse.x},${mouse.y})`, mouse.x, mouse.y)   
 }
 
-var toggleDrag = () => {
-     mouse.pressed = mouse.pressed == false ? true : false
-     if(mouse.pressed == false){
-        mouse.holding = null  
-     }
+var toggleDrag = (e) => {
+    if(e.type == "mousedown"){
+        mouse.pressed = true;
+
+    }else if(e.type == "mouseup"){
+        mouse.pressed = false;
+        mouse.holding = null;
+    }
 }
 
 var updateMousePos = (e) => {
