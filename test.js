@@ -227,7 +227,7 @@ class Circle extends Entity{
                 this.ballSpeedX = 0
                 this.ballSpeedY = 0 
             }else if(this.explodeTimer < 5){
-                if(this.explodeTimer % 2 == 0){
+                if(this.explodeTimer % 2 === 0){
                     this.color = "#00FF00";
                 }else{
                     this.color = this.oldColor;
@@ -287,14 +287,14 @@ class Circle extends Entity{
     }
     
     isCollildingWith(entity){
-         if(this.incapacitated != true){
+         if(this.incapacitated !== true){
              
             let distance = this.getDistance(this.x, this.y, entity.trueCenterX, entity.trueCenterY)
             let distanceRange = {
                 max : 52,
                 min : 48 
             }
-            if(distance < distanceRange.max && this.invulerable == false){ 
+            if(distance < distanceRange.max && this.invulerable === false){ 
                 this.invulerableSwitch() 
                 // this.drawLinesBetween(entity.trueCenterX, entity.trueCenterY)
                 //determine sides so that we can dicttate the proper way to bounce off
@@ -354,18 +354,18 @@ class Circle extends Entity{
                     // this.getDistance(selfBottomRightCornerPoint.x, selfBottomRightCornerPoint.y, entityCenterPoint.x, entityCenterPoint.y) > distanceRange.min 
 
                 //if a rectangle find sides
-                if(entity.radius == null){
+                if(entity.radius === null){
                     // add direction if sides hit
-                    if(shouldMoveLEFT == true){
+                    if(shouldMoveLEFT === true){
                         this.ballSpeedX *= -1;
                     }
-                    if(shouldMoveRIGHT == true){
+                    if(shouldMoveRIGHT === true){
                         this.ballSpeedX *= -1; 
                     }
-                    if(shouldMoveUP == true){
+                    if(shouldMoveUP === true){
                         this.ballSpeedY *= -1;
                     }
-                    if(shouldMoveDOWN == true){
+                    if(shouldMoveDOWN === true){
                         this.ballSpeedY *= -1; 
                     }
 
@@ -377,15 +377,17 @@ class Circle extends Entity{
     }
 
     isInteractingWithMouse(mouse){
-        let distance = this.getDistance(this.x, this.y, mouse.x, mouse.y)
+        // if(this.ignoreMouse === false){
+            let distance = this.getDistance(this.x, this.y, mouse.x, mouse.y)
 
-        if(distance <= this.radius && mouse.holding == null){
-            mouse.holding = this
-        }
-        if(mouse.holding === this){
-            this.x = mouse.x
-            this.y = mouse.y
-        }
+            if(distance <= this.radius && mouse.holding === null){
+                mouse.holding = this
+            }
+            if(mouse.holding === this){
+                this.x = mouse.x
+                this.y = mouse.y
+            }
+        // }
     }
 
     getDistance(x1,y1,x2,y2){
@@ -413,7 +415,7 @@ class Circle extends Entity{
 
     beAwareOfMouse(mouse){
 
-        if(mouse.pressed == true && this.ignoreMouse == false && this.explodeState < 2){
+        if(mouse.pressed == true && this.ignoreMouse == false){
             this.isInteractingWithMouse(mouse)
         }
         // this.drawLinesBetween(mouse.x, mouse.y)
