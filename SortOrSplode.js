@@ -201,6 +201,7 @@ class Circle extends Entity{
     explodeState;
     interval;
     ignoreMouse;
+    currentSector;
 
     constructor(context, x, y, dirX, dirY, radius, colors, explodeTimer){
         super(context, x, y, colors != null ? colors.vibrant : null)
@@ -289,9 +290,25 @@ class Circle extends Entity{
     get flatColor(){
         return this.flatColor;
     }
-    
+
+    get ExplodeColor(){
+        return this.explodeColor;
+    }
+
+    set ExplodeState(num){
+        this.explodeState = num;
+    }
+
     get ExplodeState(){
         return this.explodeState;
+    }
+
+    set CurrentSector(zone){
+        this.currentSector = zone;
+    } 
+
+    get CurrentSector(){
+        return this.currentSector;
     }
 
     isCollildingWith(entity){
@@ -571,20 +588,27 @@ class Zone{
                 let circleXInZone = (circle.X > this.zoneWestSide()) && (circle.X < this.zoneEastSide())
                 let circleYInZone = (circle.Y > this.zoneNorthSide()) && (circle.Y < this.zoneSouthSide())
                 if(circleXInZone && circleYInZone){
+                    //state that this is the current zone this circle is docked in
+                    circle.currentSector = this
+                    //make the circle immovable
                     circle.incapacitatedSwitch()
-                   
+
+                    //if by chance a different colored circle from what the zone is placed in, then everything in that zone must explode
                     if (circle.flatColor !== this.flatColor){
-                        this.incapacitatedCircles.map(incCircle => {
-                            incCircle.explodeState = 2
-                            incCircle.color = incCircle.explodeColor;
-                            incCircle.display()
-                        })
                         this.zonesExplodeState = true;
-                    }else{
-                        this.incapacitatedCircles.push(circle)
                     }
-                    
-                } 
+                    //if circles belong to that sector while the zone is in an exploded state, those circles must explode
+                    if(circle.currentSector == this && this.zonesExplodeState === true){
+                        //go through all the circles that fit this critera and explode all of them
+                        circleRepository.forEach((circle) => {
+                            circle.ExplodeState = 2;
+                            circle.Color = circle.ExplodeColor;
+                            circle.display()
+                        })
+                    }
+          
+                }
+
                 return circleXInZone && circleYInZone
         })
         this.count = circleWithinZone.length
@@ -838,6 +862,7 @@ var displayLayers = () => {
     generateLayout = new GenerateLayer(layout(canvasContext));
     generateLayout.implimentBricksFromLayer();
     spawns = generateLayout.SavedSpawns
+   
 }
 
 var displayCircles = (circleRepository) => {
