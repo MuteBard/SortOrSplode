@@ -599,11 +599,13 @@ class Zone{
                     }
                     //if circles belong to that sector while the zone is in an exploded state, those circles must explode
                     if(circle.currentSector == this && this.zonesExplodeState === true){
-                        //go through all the circles that fit this critera and explode all of them
+                        //go through all the circles to ensure getting all of them that are in this sector and explode all of them
                         circleRepository.forEach((circle) => {
-                            circle.ExplodeState = 2;
-                            circle.Color = circle.ExplodeColor;
-                            circle.display()
+                            if(circle.currentSector == this){
+                                circle.ExplodeState = 2;
+                                circle.Color = circle.ExplodeColor;
+                                circle.display()
+                            }
                         })
                     }
           
@@ -980,12 +982,18 @@ var initializeSpawns = (amountToBeReleased, releaseType, secondsToExplode) => {
 var spawnInitializationManager = () => {
     let spawnTimer = 0;
     let parameter = [];
+    circleRepository = []
     setInterval(() => {
 
         if(spawnTimer === 0 ){
             //let parameters = [amountToBeReleased, releaseType, secondsToExplode]
-            let parameters = [4, 1, 10]
-            circleRepository = initializeSpawns(...parameters)
+            let parameters = [1, 0, 5]
+            circleRepository.push(...initializeSpawns(...parameters))
+        }
+        if(spawnTimer === 1 ){
+            //let parameters = [amountToBeReleased, releaseType, secondsToExplode]
+            let parameters = [1, 0, 10]
+            circleRepository.push(...initializeSpawns(...parameters))
         }
 
         // else if(spawnTimer === 1){
