@@ -193,6 +193,8 @@ class Circle extends Entity{
     invulerable;
     flatColor;
     oldColor;
+    distressColor;
+    explodeColor;
     incapacitated;
     count;
     explodeTimer;
@@ -204,6 +206,8 @@ class Circle extends Entity{
         super(context, x, y, colors != null ? colors.vibrant : null)
         this.flatColor = colors != null ? colors.flat : null;
         this.oldColor = colors != null ? colors.vibrant : null;
+        this.distressColor = "#00FF00";
+        this.explodeColor = "#00FFFF";
         this.trueCenterX = x;
         this.trueCenterY = y;
         this.radius = radius;
@@ -212,7 +216,7 @@ class Circle extends Entity{
         this.invulerable = false;
         this.incapacitated = false;
         this.count = 0;
-        this.explodeTimerStart = explodeTimer * 1000
+        this.explodeTimerStart = explodeTimer * 1000;
         this.explodeTimer = explodeTimer;
         this.explodeState = 0;
         this.ignoreMouse = false;
@@ -223,12 +227,12 @@ class Circle extends Entity{
        this.interval = setInterval(() => {
             if(this.explodeTimer <= 0){
                 this.explodeState = 2;
-                this.color = "#00FFFF";
+                this.color = this.explodeColor;
                 this.ballSpeedX = 0
                 this.ballSpeedY = 0 
             }else if(this.explodeTimer < 5){
                 if(this.explodeTimer % 2 == 0){
-                    this.color = "#00FF00";
+                    this.color = this.distressColor;
                 }else{
                     this.color = this.oldColor;
                 }
@@ -258,7 +262,7 @@ class Circle extends Entity{
     //     this.count++;
     // }
 
-    incapacitatedSwitch(){
+    incapacitatedSwitch(){  
         this.incapacitated = true
         this.ballSpeedX = 1 
         this.ballSpeedY = 1
@@ -286,6 +290,10 @@ class Circle extends Entity{
         return this.flatColor;
     }
     
+    get ExplodeState(){
+        return this.explodeState;
+    }
+
     isCollildingWith(entity){
          if(this.incapacitated != true){
              
@@ -429,7 +437,7 @@ class Circle extends Entity{
     }
 
     move(canvas){
-        if(this.explodeState < 2){    
+        if(this.explodeState < 2 || this.ignoreMouse == false){    
             //add movement
             this.x += this.ballSpeedX;
             this.y += this.ballSpeedY;
@@ -451,13 +459,15 @@ class Circle extends Entity{
     }
     
     display(){
-        this.Context.fillStyle = super.Color;
-        this.Context.beginPath();
-        this.Context.arc(this.x, this.y, this.radius, 0, Math.PI*2, true);
-        this.Context.fill();
-        this.Context.lineWidth = 5;
-        this.Context.strokeStyle = "#000000";
-        this.Context.stroke();
+        if (this.Context != undefined){
+            this.Context.fillStyle = super.Color;
+            this.Context.beginPath();
+            this.Context.arc(this.x, this.y, this.radius, 0, Math.PI*2, true);
+            this.Context.fill();
+            this.Context.lineWidth = 5;
+            this.Context.strokeStyle = "#000000";
+            this.Context.stroke();
+        }
     }
 
 }
@@ -473,6 +483,7 @@ class Zone{
     zonesExplodeState;
     flatColor;
     lastCount;
+    incapacitatedCircles;
 
     constructor(x, y, width, height, brick, layout){
         if(layout == null){
@@ -486,6 +497,7 @@ class Zone{
             this.flatColor = brick.flatColor;
             this.zonesExplodeState = false;
             this.count = 0;
+            this.incapacitatedCircles = []
         }
         else if (x === null && y === null && width === null, height === null, brick === null){
             this.x = 0;
@@ -497,6 +509,7 @@ class Zone{
             this.flatColor = null;
             this.zonesExplodeState = false;
             this.count = 0;
+            this.incapacitatedCircles = []
         }
     }
 
@@ -512,8 +525,8 @@ class Zone{
         return this.flatColor;
     }
 
-    get HasExploded(){
-        return this.explode;
+    get ExplodeState(){
+        return this.zonesExplodeState;
     }
 
     zoneWestSide(){
@@ -527,6 +540,9 @@ class Zone{
     }
     zoneSouthSide(){
         return this.zoneNorthSide() + this.height * this.brick.height
+    }
+    incapacitatedCircles(){
+        return this.incapacitatedCircles
     }
 
     //merges two zones together by taking in a zone as parameter and traverses the basezone's array to locate the proper
@@ -556,13 +572,20 @@ class Zone{
                 let circleYInZone = (circle.Y > this.zoneNorthSide()) && (circle.Y < this.zoneSouthSide())
                 if(circleXInZone && circleYInZone){
                     circle.incapacitatedSwitch()
+                   
                     if (circle.flatColor !== this.flatColor){
-                        circle.explodeState = 2
+                        this.incapacitatedCircles.map(incCircle => {
+                            incCircle.explodeState = 2
+                            incCircle.color = incCircle.explodeColor;
+                            incCircle.display()
+                        })
                         this.zonesExplodeState = true;
+                    }else{
+                        this.incapacitatedCircles.push(circle)
                     }
+                    
                 } 
                 return circleXInZone && circleYInZone
-                
         })
         this.count = circleWithinZone.length
     }
@@ -614,7 +637,10 @@ class GenerateLayer{
         return this.savedSpawns
     }
 }
-const font = "50px Factory";
+const font = {
+    scorebord : "50px Factory",
+    gameover : "65px Factory"
+} 
 var circleRepository = Array(200).fill(new Circle());
 var pendingCircleInitialization = true;
 var spawns = [];
@@ -773,7 +799,7 @@ let difficulty = {
 }
 
 let gameState = {
-    gameover : true
+    gameover : false
 }
 
 window.onload = () => {
@@ -799,6 +825,7 @@ var drawCode = () => {
     implementCircleInteraction()
     displayCountsAndScores()
     displayMouseCoordinates()
+    promptGameOver(sectors, circleRepository)
 }
 
 var createWindow = () => {
@@ -813,19 +840,41 @@ var displayLayers = () => {
     spawns = generateLayout.SavedSpawns
 }
 
-var displayCircles = (circleRepository) =>{
+var displayCircles = (circleRepository) => {
     circleRepository.map(circle => {
         circle.display()
         circle.move(canvas)
-        if(circle.explodeState == 2){
 
+    })
+}
+
+var promptGameOver = (sectors, circleRepository) => {
+    circleRepository.forEach(circle => {
+        if(circle.ExplodeState == 2){
+            gameState.gameover = true
         }
     })
+    sectors.forEach(sector => {
+        if(sector.ExplodeState == true){
+            gameState.gameover = true
+        }
+    })
+
+    if (gameState.gameover == true){
+        canvasContext.font = font.gameover;
+        canvasContext.fillStyle = "#FF0000";
+        canvasContext.fillText(`Game Over`, canvas.width/3.7, canvas.height/3) 
+    }
+    
+
 }
 
 var implementCircleInteraction = () => {
         collisionWithBricksActive()
-        interactionWithMouseActive()
+        if(gameState.gameover == false){
+            interactionWithMouseActive()
+        }
+        
 }
 
 var collisionWithBricksActive = () => {
@@ -850,7 +899,7 @@ var displayCountsAndScores = () => {
         return ScoreCoordinates;
     })
     sectors.forEach((sector, idx) => {
-        canvasContext.font = font;
+        canvasContext.font = font.scorebord;
         canvasContext.fillStyle = sector.flatColor;
         canvasContext.fillText(sector.Count, positions[idx].x, positions[idx].y)
     })   
