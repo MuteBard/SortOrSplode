@@ -262,7 +262,7 @@ class Circle extends Entity{
         if(this.incapacitateOnce == false){
             //randomize the placement of the circle within the zone once incapacitated
             let westSideOfSector = this.currentSector.zoneWestSide() + 25
-            let widthOfSector = this.currentSector.TrueWidth - 100  
+            let widthOfSector = this.currentSector.TrueWidth - 50  
             let northSideOfSector = this.currentSector.zoneNorthSide() + 25
             let heightOfSector = this.currentSector.TrueHeight - 50
             this.x = Math.floor(Math.random() * widthOfSector) + westSideOfSector;
@@ -890,8 +890,6 @@ var promptGameOver = (sectors, circleRepository) => {
         canvasContext.fillStyle = "#FF0000";
         canvasContext.fillText(`Game Over`, canvas.width/3.7, canvas.height/3) 
     }
-    
-
 }
 
 var implementCircleInteraction = () => {
@@ -928,6 +926,9 @@ var displayCountsAndScores = () => {
         canvasContext.fillStyle = sector.flatColor;
         canvasContext.fillText(sector.Count, positions[idx].x, positions[idx].y)
     })   
+    scoreObj = document.getElementById('score')
+    scoreObj.innerHTML = sectors.reduce((sum, sector) => sector.Count + sum, 0)
+    score.style.color = "#FFFF00";
 }
 
 var initializeSpawns = (amountToBeReleased, releaseType, secondsToExplode) => {
@@ -1022,6 +1023,25 @@ var spawnInitializationManager = () => {
         [3,1,4],
         [3,1,4],
         [32,2,60],
+        [3,1,4],
+        [3,1,4],
+        [3,1,4],
+        [1,1,2],
+        [1,1,2],
+        [1,1,2],
+        [1,1,2],
+        [1,1,2],
+        [1,1,2],
+        [8,0,8],
+        [0,0,0],
+        [16,0,12],
+        [0,0,0],
+        [8,0,6],
+        [0,0,0],
+        [16,0,10],
+        [1,0,1],
+        
+
     ]
     setInterval(() => {
         //initalizeSpawns returns an array of Circles. We do not want to create a new circleRepository, we want to rather push these new
@@ -1085,7 +1105,8 @@ var playFFXIVImagination = () => {
     gameStart = true;
     beginButtonObj = document.getElementById('begin')
     beginButtonObj.style.display = "none";
-
+    scorepreTextObj = document.getElementById('scorepreText')
+    scorepreText.innerHTML = "Your Score is:";
     window.onload()
 }
 
