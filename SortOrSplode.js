@@ -109,7 +109,7 @@ class Rectangle extends Entity{
 class Brick extends Rectangle{
     idX = 0;
     idY = 0;  
-    gap = true  ;
+    gap = true;
     visible;
     obstacle;
     spawn;
@@ -966,7 +966,7 @@ var initializeSpawns = (amountToBeReleased, releaseType, secondsToExplode) => {
             let y = spawns[index].y
             let dirX = directionRandomization()
             let dirY = directionRandomization()
-            let radius = 20;
+            let radius = 30;
             let colorObj = colorRandomization()
             let circle = new Circle(canvasContext, x, y, dirX, dirY, radius, colorObj, secondsToExplode)
             circle.explodeCountdown() 
@@ -986,7 +986,7 @@ var spawnInitializationManager = () => {
     circleRepository = []
     spawnData = 
     [
-        [1,0,10],
+        [1,1,10],
         [1,0,10],
         [2,1,10],
         [2,1,10],
@@ -997,10 +997,10 @@ var spawnInitializationManager = () => {
         [4,2,10],
         [4,2,10],
         [8,0,12],
-        [16,2,18],
+        [16,2,20],
         [1,2,5],
         [1,2,5],
-        [16,1,20],
+        [16,1,80],
 
         
     ]
