@@ -202,6 +202,7 @@ class Circle extends Entity{
     interval;
     ignoreMouse;
     currentSector;
+    incapacitateOnce;
 
     constructor(context, x, y, dirX, dirY, radius, colors, explodeTimer){
         super(context, x, y, colors != null ? colors.vibrant : null)
@@ -221,6 +222,8 @@ class Circle extends Entity{
         this.explodeTimer = explodeTimer;
         this.explodeState = 0;
         this.ignoreMouse = false;
+        this.currentSector = null;
+        this.incapacitateOnce = false
         
     }
 
@@ -249,38 +252,26 @@ class Circle extends Entity{
         setInterval(() => this.invulerable = false, 100);  
     }
 
-    // hyperSwitch(){
-    //     this.ballSpeedX = 2
-    //     this.ballSpeedY = 2
-    //     if(this.count % 4 == 0){
-    //         this.ballSpeedX *= -1
-    //         this.ballSpeedY *= -1
-    //     }else if(this.count % 4 == 1){
-    //         this.ballSpeedX *= -1
-    //     }else if(this.count % 4 == 2){
-    //         this.ballSpeedY *= -1
-    //     }
-    //     this.count++;
-    // }
-
     incapacitatedSwitch(){  
         this.incapacitated = true
-        this.ballSpeedX = 1 
-        this.ballSpeedY = 1
+        this.ballSpeedX = 0
+        this.ballSpeedY = 0
         this.color = this.oldColor
         this.ignoreMouse = true
         clearInterval(this.interval)
 
-            if(this.count % 4 == 0){
-                this.ballSpeedX *= -1
-                this.ballSpeedY *= -1
-            }else if(this.count % 4 == 1){
-                this.ballSpeedX *= -1
-            }else if(this.count % 4 == 2){
-                this.ballSpeedY *= -1
-            }
-        this.count++;
-        
+        if(this.incapacitateOnce == false){
+            //randomize the placement of the circle within the zone once incapacitated
+            let westSideOfSector = this.currentSector.zoneWestSide() + 25
+            let widthOfSector = this.currentSector.TrueWidth
+            let northSideOfSector = this.currentSector.zoneNorthSide() 
+            let heightOfSector = this.currentSector.TrueHeight
+            this.x = Math.floor(Math.random() * widthOfSector) + westSideOfSector;
+            this.y = Math.floor(Math.random() * heightOfSector) + northSideOfSector;
+            this.incapacitateOnce = true;
+        }
+
+
     }
     
     get Radius(){
@@ -454,7 +445,7 @@ class Circle extends Entity{
     }
 
     move(canvas){
-        if(this.explodeState < 2 || this.ignoreMouse == false){    
+        if(this.explodeState < 2 || this.ignoreMouse == false || this.incapacitated == false){    
             //add movement
             this.x += this.ballSpeedX;
             this.y += this.ballSpeedY;
@@ -546,6 +537,14 @@ class Zone{
         return this.zonesExplodeState;
     }
 
+    get TrueWidth(){
+        return this.width * this.brick.width
+    }
+
+    get TrueHeight(){
+        return this.height * this.brick.height
+    }
+
     zoneWestSide(){
         return this.x * this.brick.width
     }
@@ -589,7 +588,7 @@ class Zone{
                 let circleYInZone = (circle.Y > this.zoneNorthSide()) && (circle.Y < this.zoneSouthSide())
                 if(circleXInZone && circleYInZone){
                     //state that this is the current zone this circle is docked in
-                    circle.currentSector = this
+                    circle.CurrentSector = this
                     //make the circle immovable
                     circle.incapacitatedSwitch()
 
@@ -980,55 +979,26 @@ var initializeSpawns = (amountToBeReleased, releaseType, secondsToExplode) => {
 }
 
 var spawnInitializationManager = () => {
-    let spawnTimer = 0;
+    let spawnIndex = 0;
     let parameter = [];
+
+    //[amountToBeReleased, releaseType, secondsToExplode]
     circleRepository = []
+    spawnData = 
+    [
+        [1,0,10],
+        [1,0,10],
+        [1,0,10],
+        [1,0,10],
+        
+    ]
     setInterval(() => {
-
-        if(spawnTimer === 0 ){
-            //let parameters = [amountToBeReleased, releaseType, secondsToExplode]
-            let parameters = [1, 0, 5]
-            circleRepository.push(...initializeSpawns(...parameters))
-        }
-        if(spawnTimer === 1 ){
-            //let parameters = [amountToBeReleased, releaseType, secondsToExplode]
-            let parameters = [1, 0, 10]
-            circleRepository.push(...initializeSpawns(...parameters))
-        }
-
-        // else if(spawnTimer === 1){
-        //     let parameters = [1, 1, 10]
-        //     circleRepository = initializeSpawns(...parameters)
-        // }
-        // else if(gameSeconds >= 20 && seconds < 35){
-
-        // }else if(gameSeconds >= 35 && gameSeconds < 50){
-            
-        // }else if(gameSeconds >= 50 && gameSeconds < 55){
-            
-        // }else if(gameSeconds >= 60 && gameSeconds < 75){
-            
-        // }else if(gameSeconds >= 75 && gameSeconds < 90){
-            
-        // }else if(gameSeconds >= 95 && gameSeconds < 120){
-            
-        // }else if(gameSeconds >= 120 && gameSeconds < 130){
-            
-        // }else if(gameSeconds >= 130 && gameSeconds < 135){
-            
-        // }else if(gameSeconds >= 135 && gameSeconds < 150){
-            
-        // }else if(gameSeconds >= 150 && gameSeconds < 155){
-            
-        // }else if(gameSeconds >= 155 && gameSeconds < 170){
-            
-        // }else if(gameSeconds >= 170 && gameSeconds < 180){
-            
-        // }
-
-        //TODO remember to not count up when score is being counted upon 40 collected
-        spawnTimer++
-
+        //initalizeSpawns returns an array of Circles. We do not want to create a new circleRepository, we want to rather push these new
+        //circles inside the circle repository. However, initializeSpawns takes 3 parameters: the amount of circles released on the map at that given iteration,
+        //the methood of how it is released, and the duration of how long it may stay on the field. these parameters are spread into initializeSpawns and set interval
+        //automates this process for minimal redundancy, using the spawntimer as an index to get the proper spawn instructions for initialize Spawns for each iteration
+        circleRepository.push(...initializeSpawns(...spawnData[spawnIndex]))
+        spawnIndex++
     }, 10000)
 }
 
