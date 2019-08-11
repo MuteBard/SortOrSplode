@@ -926,9 +926,13 @@ var displayCountsAndScores = () => {
         canvasContext.fillStyle = sector.flatColor;
         canvasContext.fillText(sector.Count, positions[idx].x, positions[idx].y)
     })   
-    scoreObj = document.getElementById('score')
-    scoreObj.innerHTML = sectors.reduce((sum, sector) => sector.Count + sum, 0)
-    score.style.color = "#FFFF00";
+    if(gameState.gameover == true){
+        scorepreTextObj = document.getElementById('scorepreText')
+        scorepreText.innerHTML = "Your Score is:";
+        scoreObj = document.getElementById('score')
+        scoreObj.innerHTML = sectors.reduce((sum, sector) => sector.Count + sum, 0)
+        score.style.color = "#FFFF00";
+    }
 }
 
 var initializeSpawns = (amountToBeReleased, releaseType, secondsToExplode) => {
@@ -1105,8 +1109,6 @@ var playFFXIVImagination = () => {
     gameStart = true;
     beginButtonObj = document.getElementById('begin')
     beginButtonObj.style.display = "none";
-    scorepreTextObj = document.getElementById('scorepreText')
-    scorepreText.innerHTML = "Your Score is:";
     window.onload()
 }
 
