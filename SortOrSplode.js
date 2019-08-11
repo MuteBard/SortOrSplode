@@ -109,7 +109,7 @@ class Rectangle extends Entity{
 class Brick extends Rectangle{
     idX = 0;
     idY = 0;  
-    gap = true;
+    gap = true  ;
     visible;
     obstacle;
     spawn;
@@ -177,9 +177,8 @@ class Brick extends Rectangle{
         return this.visible;
     }
 
-    get toggleGap(){
+    toggleGap(){
         this.gap = this.gap == 2 ? 0 : 2;
-        return this.gap;
     }
 
 }
@@ -263,7 +262,7 @@ class Circle extends Entity{
         if(this.incapacitateOnce == false){
             //randomize the placement of the circle within the zone once incapacitated
             let westSideOfSector = this.currentSector.zoneWestSide() + 25
-            let widthOfSector = this.currentSector.TrueWidth - 50
+            let widthOfSector = this.currentSector.TrueWidth - 100  
             let northSideOfSector = this.currentSector.zoneNorthSide() + 25
             let heightOfSector = this.currentSector.TrueHeight - 50
             this.x = Math.floor(Math.random() * widthOfSector) + westSideOfSector;
@@ -696,9 +695,9 @@ var sectors = [];
 var scoreboards = []
 var colors = {
     brick :{
-        gray : {
-            vibrant : "#EAEAEA",
-            flat : "gray"
+        darkCyan : {
+            vibrant : "#293749",
+            flat : "darkCyan"
         },
         red : {
             vibrant : "#BB3030",
@@ -720,9 +719,9 @@ var colors = {
             vibrant : "#808080",
             flat : "darkGray"
         },
-        tan : {
-            vibrant : "#D2B48C",
-            flat : "tan"
+        midCyan : {
+            vibrant : "#295C9E",
+            flat : "midCyan"
         },
         shadow : {
             
@@ -751,15 +750,15 @@ var layers = {
 
         //Define the size, color and behavior of a brick
         var bricks = [
-            new Brick(context, colors.brick.gray, behavior.scene),
+            new Brick(context, colors.brick.darkCyan, behavior.scene),
             new Brick(context, colors.brick.yellow, behavior.scene),
             new Brick(context, colors.brick.red, behavior.sector),
             new Brick(context, colors.brick.purple, behavior.sector),
             new Brick(context, colors.brick.yellow, behavior.sector),
             new Brick(context, colors.brick.darkGray, behavior.spawn),
-            new Brick(context, colors.brick.tan, behavior.wall),
+            new Brick(context, colors.brick.midCyan, behavior.wall),
             new Brick(context, colors.brick.shadow, behavior.wall),
-            new Brick(context, colors.brick.tan, behavior.scene),
+            new Brick(context, colors.brick.midCyan, behavior.scene),
             new Brick(context, colors.brick.shadow, behavior.wall)
         ]
 
@@ -767,25 +766,25 @@ var layers = {
         let zones = [];
         zones.push(new Zone(0, 0, 32, 29, bricks[0]));
         
-        let tanWallWidth = 13;
-        let tanWallHeight = 5;
+        let midCyanWallWidth = 13;
+        let midCyanWallHeight = 5;
         let scorboardWidth = 4;
         let scoreboardHeight = 3;
-        zones.push(new Zone(0, 0, tanWallWidth, tanWallHeight, bricks[8]));
-        zones.push(new Zone(0, 0, tanWallWidth - 1, tanWallHeight - 1, bricks[6]));
+        zones.push(new Zone(0, 0, midCyanWallWidth, midCyanWallHeight, bricks[8]));
+        zones.push(new Zone(0, 0, midCyanWallWidth - 1, midCyanWallHeight - 1, bricks[6]));
         let scoreboard1 = new Zone(1, 1, scorboardWidth, scoreboardHeight, bricks[9])
         zones.push(scoreboard1)
         
-        zones.push(new Zone(19, 0, tanWallWidth, tanWallHeight, bricks[8]));
-        zones.push(new Zone(20, 0, tanWallWidth - 1, tanWallHeight - 1, bricks[6]));
+        zones.push(new Zone(19, 0, midCyanWallWidth, midCyanWallHeight, bricks[8]));
+        zones.push(new Zone(20, 0, midCyanWallWidth - 1, midCyanWallHeight - 1, bricks[6]));
         let scoreboard2 = new Zone(27, 1, scorboardWidth, scoreboardHeight, bricks[9])
         zones.push(scoreboard2)
 
-        zones.push(new Zone(0, 24, tanWallWidth, tanWallHeight, bricks[8]));
-        zones.push(new Zone(0, 25, tanWallWidth - 1, tanWallHeight - 1, bricks[6]));
+        zones.push(new Zone(0, 24, midCyanWallWidth, midCyanWallHeight, bricks[8]));
+        zones.push(new Zone(0, 25, midCyanWallWidth - 1, midCyanWallHeight - 1, bricks[6]));
 
-        zones.push(new Zone(19, 24, tanWallWidth, tanWallHeight, bricks[8]));
-        zones.push(new Zone(20, 25, tanWallWidth - 1, tanWallHeight - 1, bricks[6]));
+        zones.push(new Zone(19, 24, midCyanWallWidth, midCyanWallHeight, bricks[8]));
+        zones.push(new Zone(20, 25, midCyanWallWidth - 1, midCyanWallHeight - 1, bricks[6]));
 
         // zones.push(new Zone(19, 24,   13, 5, bricks[8]));
         // zones.push(new Zone(20, 25, tanWallWidth, tanWallHeight, bricks[6]));
@@ -849,7 +848,7 @@ var drawCode = () => {
     displayCircles(circleRepository)
     implementCircleInteraction()
     displayCountsAndScores()
-    displayMouseCoordinates()
+    // displayMouseCoordinates()
     promptGameOver(sectors, circleRepository)
 }
 
@@ -966,7 +965,7 @@ var initializeSpawns = (amountToBeReleased, releaseType, secondsToExplode) => {
             let y = spawns[index].y
             let dirX = directionRandomization()
             let dirY = directionRandomization()
-            let radius = 30;
+            let radius = 25;
             let colorObj = colorRandomization()
             let circle = new Circle(canvasContext, x, y, dirX, dirY, radius, colorObj, secondsToExplode)
             circle.explodeCountdown() 
@@ -982,25 +981,36 @@ var spawnInitializationManager = () => {
     let spawnIndex = 0;
     let parameter = [];
 
-    //[amountToBeReleased, releaseType, secondsToExplode]
+    //[amountToBeReleased, releaseType, secondsToExplode, radius]
     circleRepository = []
     spawnData = 
     [
-        [1,1,10],
+        [1,0,10],
         [1,0,10],
         [2,1,10],
         [2,1,10],
         [2,0,10],
         [2,0,10],
-        [4,1,10],
-        [4,1,10],
+        [4,1,16],
+        [4,1,13],
         [4,2,10],
-        [4,2,10],
+        [1,2,5],
         [8,0,12],
-        [16,2,20],
+        [1,2,5],
+        [2,2,5],
         [1,2,5],
         [1,2,5],
-        [16,1,80],
+        [2,2,5],
+        [1,2,5],
+        [16,2,30],
+        [1,2,5],
+        [1,2,5],
+        [1,2,5],
+        [1,2,5],
+        [0,0,0],
+        [16,2,30],
+     
+        
 
         
     ]
@@ -1011,7 +1021,7 @@ var spawnInitializationManager = () => {
         //automates this process for minimal redundancy, using the spawntimer as an index to get the proper spawn instructions for initialize Spawns for each iteration
         circleRepository.push(...initializeSpawns(...spawnData[spawnIndex]))
         spawnIndex++
-    }, 10000)
+    }, 4000)
 }
 
 var colorRandomization = () => {
