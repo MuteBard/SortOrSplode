@@ -1008,11 +1008,20 @@ var spawnInitializationManager = () => {
         [1,2,5],
         [1,2,5],
         [0,0,0],
-        [16,2,30],
-     
-        
-
-        
+        [16,2,40],
+        [8,2,40],
+        [2,0,6],
+        [2,0,6],
+        [1,0,5],
+        [1,0,5],
+        [0,0,0],
+        [2,1,4],
+        [2,1,4],
+        [2,1,4],
+        [2,1,4],
+        [3,1,4],
+        [3,1,4],
+        [32,2,60],
     ]
     setInterval(() => {
         //initalizeSpawns returns an array of Circles. We do not want to create a new circleRepository, we want to rather push these new
@@ -1021,7 +1030,7 @@ var spawnInitializationManager = () => {
         //automates this process for minimal redundancy, using the spawntimer as an index to get the proper spawn instructions for initialize Spawns for each iteration
         circleRepository.push(...initializeSpawns(...spawnData[spawnIndex]))
         spawnIndex++
-    }, 4000)
+    }, 6000)
 }
 
 var colorRandomization = () => {
