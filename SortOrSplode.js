@@ -263,9 +263,9 @@ class Circle extends Entity{
         if(this.incapacitateOnce == false){
             //randomize the placement of the circle within the zone once incapacitated
             let westSideOfSector = this.currentSector.zoneWestSide() + 25
-            let widthOfSector = this.currentSector.TrueWidth
-            let northSideOfSector = this.currentSector.zoneNorthSide() 
-            let heightOfSector = this.currentSector.TrueHeight
+            let widthOfSector = this.currentSector.TrueWidth - 50
+            let northSideOfSector = this.currentSector.zoneNorthSide() + 25
+            let heightOfSector = this.currentSector.TrueHeight - 50
             this.x = Math.floor(Math.random() * widthOfSector) + westSideOfSector;
             this.y = Math.floor(Math.random() * heightOfSector) + northSideOfSector;
             this.incapacitateOnce = true;
@@ -988,8 +988,20 @@ var spawnInitializationManager = () => {
     [
         [1,0,10],
         [1,0,10],
-        [1,0,10],
-        [1,0,10],
+        [2,1,10],
+        [2,1,10],
+        [2,0,10],
+        [2,0,10],
+        [4,1,10],
+        [4,1,10],
+        [4,2,10],
+        [4,2,10],
+        [8,0,12],
+        [16,2,18],
+        [1,2,5],
+        [1,2,5],
+        [16,1,20],
+
         
     ]
     setInterval(() => {
