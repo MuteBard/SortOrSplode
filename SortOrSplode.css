@@ -9,58 +9,125 @@
     font-weight: bold;
     src: url('./CursedTimerUlil-Aznm.ttf') format('opentype')
 }
-*   {
+*{
     background-color: #193961;
     color : white;
 }
+
+html, body {margin: 0; height: 100%; overflow: hidden}
 
 .presentation{
     display:flex;
     align-content: center;
     justify-content: center;
     flex-direction: column;
+    height : 100vh;
 }
 
 .title{
+    margin-top: 40px;
     justify-content: center;
     color : white;
-    display: flex
+    display: flex;
 }
+
+.mission{
+    justify-content: center;
+    padding : 10px;
+    margin-left : 20px;
+    text-align: center;
+}
+.red{
+    color : #FF0000;
+}
+.blue{
+    color : #0000FF;
+}
+.green{
+    color : green;
+}
+.purple{
+    color : #950DEC;
+}
+.darkRed{
+    color: #BB3030;
+}
+
+
 .factoryStyle{
     font-family : "Factory";
-    font-size : 3em;
+    font-size : 40px;
     color : "black"
 }
 
-.screen{
+.gameContainer{
     display: flex;  
-    justify-content: center;
+    flex-direction: column;  
+    align-items: center;
 }
 
-
-.score{
-    color : "#FFFF00";
-    display:flex;
+.scoreContainer{
+    display : flex;
     flex-direction: column;
-    
-
-}
-
-
-.scoreText{
+    color : "#FFFF00";
     margin: 20px;
+    font-size : 80px;
+
+}
+.scoreText{
+    text-align: center;
 }
 
-.scoreData{
+.scorePoints{
+    margin-top: 5px;
     text-align: center;
 }
 
 .buttonContainer{
     font-size: 1em;
+    margin-top: 30px;
     justify-content: center;
     display: flex
 }
 
 .button{
     font-size: 1em
+}
+
+@-webkit-keyframes fadeOut {
+    0% { opacity: 1;}
+    99% { opacity: 0.01;}
+    100% { opacity: 0;display: none}
+}  
+@keyframes fadeOut {
+    0% { opacity: 1;}
+    99% { opacity: 0.01; transform: translate(0px, 1000px);}
+    100% { opacity: 0;transform: translate(0px, 1000px);display: none;}
+}
+.fadeOut{
+    -webkit-animation: fadeOut 2s;
+    animation: fadeOut 2s;
+    transform: translateY(1);
+    transition: transform 2s ease;
+    animation-fill-mode: forwards;
+}
+
+
+@-webkit-keyframes fadeIn {
+    0% { opacity: 0; }
+    99% { opacity: 0.99;transform: translate(0px, -1000px)}
+    100% { opacity: 1;transform: translate(0px, -1000px)}
+}  
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    99% { opacity: 0.99;}
+    100% { opacity: 1;}
+}
+.fadeIn{
+    -webkit-animation: fadeIn 2s;
+    animation: fadeIn 2s;
+    transform: translateY(-1);
+    transition: transform 2s ease;
+    animation-fill-mode: forwards;
+     
 }
