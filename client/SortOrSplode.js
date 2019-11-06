@@ -60,9 +60,9 @@ var colors = {
             vibrant : "#808080",
             flat : "darkGray"
         },
-        midCyan : {
+        cobalt : {
             vibrant : "#295C9E",
-            flat : "midCyan"
+            flat : "cobalt "
         },
         shadow : {
             
@@ -95,11 +95,13 @@ var layers = {
             new Brick(context, colors.brick.yellow, behavior.scene),
             new Brick(context, colors.brick.red, behavior.sector),
             new Brick(context, colors.brick.purple, behavior.sector),
+
             new Brick(context, colors.brick.yellow, behavior.sector),
             new Brick(context, colors.brick.darkGray, behavior.spawn),
-            new Brick(context, colors.brick.midCyan, behavior.wall),
+            new Brick(context, colors.brick.cobalt, behavior.wall),
             new Brick(context, colors.brick.shadow, behavior.wall),
-            new Brick(context, colors.brick.midCyan, behavior.scene),
+
+            new Brick(context, colors.brick.cobalt, behavior.scene),
             new Brick(context, colors.brick.shadow, behavior.wall)
         ]
 
@@ -166,22 +168,48 @@ let mouse = {
 }
 
 let gameState = {
-    gameover : false
+    gameover : false,
+    sendResults : false
 }
 
+let playerInfo = {
+    name : "",
+    rank : "",
+    score : ""
+}
+
+let highScorePlayers = []
+
+
+let isNameSupplied = () =>{
+    playerInfo["name"] = document.getElementById('playerName').value.toUpperCase()
+    
+    let validated = true;
+    playerInfo["name"].split("").forEach(character => {   
+        if(character.charCodeAt() < 65 || character.charCodeAt() > 90){
+            validated = false;
+        } 
+    })
+
+    if(playerInfo["name"] !== "" && playerInfo["name"].length <= 12 && validated){
+        document.getElementById("commence").disabled = false;
+    }else{
+        document.getElementById("commence").disabled = true;
+    }
+}
 
 let loadGame = () => {
-    clearIntro()
+    clearRegistration()
     setCanvas()
     setMusic()
     setGameMode()
+    setMouseListeners()
     setAnimations()  
 }
 
-
-let clearIntro = () => {
+let clearRegistration = () => {
     document.getElementById('missionContainer').style.display = "none";
-    document.getElementById('buttonContainer').style.display = "none";
+    document.getElementById('registrationContainer').style.display = "none";
 }
 
 let setCanvas = () => {
@@ -233,28 +261,20 @@ let toggleDrag = (e) => {
 }
 
 let animate = () => {
-    // if(gameStart ==  false) clearInterval(animateIntervalID)
-    applyBackground()
-    setMouseListeners()
+    displayBackground()
     displayLayers();
     if(pendingCircleInitialization){
-        spawnInitializationManager()
         pendingCircleInitialization = false;
+        spawnCirclesManager()  
     }
-    displayCircles(circleRepository)
-    implementCircleInteraction()
+    displayCircles()
+    displayCircleInteraction()
     displayCountsAndScores()
-    // displayMouseCoordinates()
-    promptGameOver(sectors, circleRepository)
+    promptGameOver()
     
 }
 
-let stopAllIntervals = () => {
-    // clearInterval(animateIntervalID)
-    clearInterval(spawnerIntervalID)
-}
-
-let applyBackground = () => {
+let displayBackground = () => {
     canvasContext.fillStyle = '#0099FF';
     canvasContext.fillRect(0, 0, canvas.width, canvas.height);
 }
@@ -262,11 +282,11 @@ let applyBackground = () => {
 let displayLayers = () => {
     let layout = layers["lvl1"]
     generateLayout = new GenerateLayer(layout(canvasContext));
-    generateLayout.implimentBricksFromLayer();
+    generateLayout.displayBricksFromLayer();
     spawnBricks = generateLayout.SavedSpawns
 }
 
-let spawnInitializationManager = () => {
+let spawnCirclesManager = () => {
     //An index that will increment to represent an array of values
     let spawnIndex = 0;
     //InitalizeSpawns returns an array of Circles, indicating each of these circle's positions and colors 
@@ -319,7 +339,7 @@ let spawnGenerator = (spawnIdx) => {
     let redFlood =  [16,EQ_CONCENTRATION,120,RED]
 
     if(spawnIdx < 5){
-        document.getElementById('phase').innerHTML = "PHASE: I'M BABY"
+        document.getElementById('phase').innerHTML = "PHASE: NEW"
         dataIndex = Math.floor((Math.random() * beginnerSingle.length))
         spawnData = beginnerSingle[dataIndex];
     }else if(spawnIdx > 5 && spawnIdx <= 20){
@@ -333,7 +353,7 @@ let spawnGenerator = (spawnIdx) => {
             spawnData = beginnerMixed[dataIndex];
         }
     }else if(spawnIdx > 20 && spawnIdx <= 40){
-        document.getElementById('phase').innerHTML = "PHASE: PSHHH EASY"
+        document.getElementById('phase').innerHTML = "PHASE: AVERAGE"
         type = Math.floor((Math.random() * 3))
         if(type == 0){
             dataIndex = Math.floor((Math.random() * hardSingle.length))
@@ -346,7 +366,7 @@ let spawnGenerator = (spawnIdx) => {
             spawnData = easyMixed[dataIndex]
         }
     }else if(spawnIdx > 40 && spawnIdx <= 100){
-        document.getElementById('phase').innerHTML = "PHASE: AVERAGE"
+        document.getElementById('phase').innerHTML = "PHASE: DECENT"
         type = Math.floor((Math.random() * 5))
         if(type == 0){
             dataIndex = Math.floor((Math.random() * easySingle.length));
@@ -363,7 +383,7 @@ let spawnGenerator = (spawnIdx) => {
             spawnData = redFlood
         }
     }else if(spawnIdx > 100 && spawnIdx <= 300){
-        document.getElementById('phase').innerHTML = "PHASE: DECENT"
+        document.getElementById('phase').innerHTML = "PHASE: GREAT"
         type = Math.floor((Math.random() * 6))
         if(type == 0){
             dataIndex = Math.floor((Math.random() * normalSingle.length));
@@ -382,7 +402,7 @@ let spawnGenerator = (spawnIdx) => {
             spawnData = redFlood
         }
     }else if(spawnIdx > 300 && spawnIdx <= 500){
-        document.getElementById('phase').innerHTML = "PHASE: DANGER DWELLER"
+        document.getElementById('phase').innerHTML = "PHASE: THE DANGER DWELLER"
         type = Math.floor((Math.random() * 3))
         if(type == 0){
             dataIndex = Math.floor((Math.random() * hardSingle.length));
@@ -413,7 +433,7 @@ let spawnGenerator = (spawnIdx) => {
             spawnData = REST
         }
     }else if(spawnIdx > 1000){
-        document.getElementById('phase').innerHTML = "PHASE LIKELY CHEATED"
+        document.getElementById('phase').innerHTML = "PHASE: THE SCHEMER"
         type = Math.floor((Math.random() * 15))
         if(type == 0){
             dataIndex = Math.floor((Math.random() * hardSingle.length));
@@ -497,9 +517,6 @@ let initializeSpawns = (circlesToBeRendered, releaseType, secondsToExplode, colo
 
 let directionRandomization = () => {
     let dir = Math.random() * 2 - 1
-        // if(Math.abs(dir) < 0.75){
-        //     dir = dir < 0 ? -0.75 : 0.75
-        // }
     return dir;
 }
 
@@ -517,24 +534,23 @@ let colorSelection = (colorId=-1) => {
 
 }
 
-let displayCircles = (circleRepository) => {
+let displayCircles = () => {
     circleRepository.map(circle => {
         circle.display()
         circle.move(canvas)
     })
 }
 
-let implementCircleInteraction = () => {
-    collisionWithBricksActive()
+let displayCircleInteraction = () => {
+    interactionWithBricksActive()
     if(gameState.gameover == false){
         interactionWithMouseActive()
     }  
 }
 
-let collisionWithBricksActive = () => {
-    circleRepository.map(circle => {
-        circle.beAwareOfBricks(generateLayout.SavedBricks)
-    })
+let interactionWithBricksActive = () => {
+    circleRepository.forEach(circle => circle.beAwareOfBricks(generateLayout.SavedBricks))
+    sectors.forEach(sector => sector.beAwareOfCircles(circleRepository))
 }
 
 let interactionWithMouseActive = () => {
@@ -544,8 +560,7 @@ let interactionWithMouseActive = () => {
 }
 
 let displayCountsAndScores = () => {
-    sectors.forEach(sector => sector.beAwareOfCircles(circleRepository))
-    let positions = scoreboards.map(scoreboard => {
+    let positionsOfPoints = scoreboards.map(scoreboard => {
         ScoreCoordinates = {
             x : scoreboard.zoneWestSide() + ((scoreboard.width - 3) * scoreboard.brick.width) - 1.5,
             y : scoreboard.zoneNorthSide() + ((scoreboard.height - 1) * scoreboard.brick.height) + 5
@@ -555,22 +570,17 @@ let displayCountsAndScores = () => {
     sectors.forEach((sector, idx) => {
         canvasContext.font = font.scorebord;
         canvasContext.fillStyle = "#FFFFFF";
-        canvasContext.fillText(sector.Count, positions[idx].x, positions[idx].y)
+        canvasContext.fillText(sector.Count, positionsOfPoints[idx].x, positionsOfPoints[idx].y)
     })   
 }
 
-// var displayMouseCoordinates = () => {
-//     canvasContext.font = "10px Arial";
-//     canvasContext.fillStyle = "#007700";
-//     canvasContext.fillText(`(${mouse.x},${mouse.y})`, mouse.x, mouse.y)   
-// }
-
-let promptGameOver = (sectors, circleRepository) => {
+let promptGameOver = () => {
     circleRepository.forEach(circle => {
         if(circle.ExplodeState == 2){
             gameStart = false
         }
     })
+
     sectors.forEach(sector => {
         if(sector.ExplodeState == true){
             gameStart = false
@@ -578,40 +588,102 @@ let promptGameOver = (sectors, circleRepository) => {
     })
 
     if (gameStart === false){
-        //plaster game over on the window
+        clearInterval(spawnerIntervalID)
         canvasContext.font = font.gameover;
         canvasContext.fillStyle = "#FF0000";
         canvasContext.fillText(`Game Over`, canvas.width/3.7, canvas.height/3)
-         
-        
-        //remove the game board after 5 seconds
-        setTimeout(() => {
-            clearInterval(animateIntervalID)
-            let title = document.getElementById("title")
-            let game = document.getElementById("game");
-            title.setAttribute("class", "title fadeOut")
-            game.setAttribute("class","game fadeOut")
-
-        }, 2000)
-
-
-        // show the user their score
-        setTimeout(() => {
-            canvas.width = 0;
-            canvas.height = 0;
-
-            
-            let scoreContainer = document.getElementById('scoreContainer')
-            scoreContainer.setAttribute("class","scoreContainer fadeIn")
-            scoreContainer.style.color = "#FFFF00";
-
-            let scoreText = document.getElementById('scoreText')
-            scoreText.innerHTML = "Nodes successfully neutralized:";
-
-            let scorePoints = document.getElementById('scorePoints')
-            scorePoints.innerHTML = sectors.reduce((sum, sector) => sector.Count + sum, 0)
-        }, 4000)
+        playerInfo["rank"] = document.getElementById('phase').innerHTML.slice(7)
+        playerInfo["score"] = sectors.reduce((sum, sector) => sector.Count + sum, 0)
+        if(gameState.sendResults === false){
+            gameState.sendResults = true;
+            sendScoresToServer()
+            setTimeout(() => removeGameBoard(), 2000)
+            setTimeout(() => showPlayerScore(), 4000)
+            setTimeout(() => displayTopScores(), 7000)
+        }
     }
+}
+
+let sendScoresToServer = async () => {
+
+    let data = {
+        name : playerInfo.name,
+        score : playerInfo.score,
+        rank : playerInfo.rank
+    }
+    let url = "http://localhost:3000/gameover"
+
+    let response = await fetch(url, {
+        method: 'POST', 
+        mode: 'cors', 
+        cache: 'no-cache', 
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data) 
+      });
+
+      let result = await response.json(); 
+      highScorePlayers = Object.values(result)
+}
+
+let removeGameBoard = () => {
+    console.log("hello?")
+    let title = document.getElementById("title")
+    let game = document.getElementById("game");
+    title.setAttribute("class", "title fadeOut")
+    game.setAttribute("class","game fadeOut")
+}
+
+let showPlayerScore = () => {
+    canvas.width = 0;
+    canvas.height = 0;
+
+    let scoreContainer = document.getElementById('scoreContainer')
+    scoreContainer.setAttribute("class","scoreContainer fadeIn")
+    scoreContainer.style.color = "#FFFF00";
+
+    let scoreText = document.getElementById('scoreText')
+    scoreText.innerHTML = "Nodes successfully neutralized:";
+
+    let scorePoints = document.getElementById('scorePoints')
+    scorePoints.innerHTML = playerInfo.score
+}
+
+
+let displayTopScores = () => {
+    displayHighScores()
+    let rankingTable = document.getElementById('rankingTable')
+    rankingContainer.setAttribute("class","rankingContainer rankings")
+    rankingContainer.scrollIntoView({behavior: "smooth"});
+}
+
+let displayHighScores = () => {
+    $('#rankingContainer').append(
+        `
+        <div class="rankingsTitle">Top 10 Rankings</div>  
+        <table id="rankingsTable" class="rankings">
+            <tr>
+                <th>Placement</th>
+                <th>Name</th>
+                <th>Rank</th>
+                <th>Score</th>
+            </tr>
+        </table>
+        `
+    )
+
+    highScorePlayers.forEach((player, idx) => {
+        $('#rankingsTable').append(
+            `<tr>
+                <td>${idx+1}</td>
+                <td>${player.name}</td>
+                <td>${player.rank}</td>
+                <td>${player.score}</td>
+            </tr>
+            `
+        )
+    })
 }
 
 class Entity{
@@ -1245,7 +1317,7 @@ class GenerateLayer{
         this.savedSpawns = [];
     }
 
-    implimentBricksFromLayer(){
+    displayBricksFromLayer(){
         //access each the rows of a layer (up and down, y)
         for(let i = 0; i < this.layer.length; i++){
             //access each the columns of a row (left and right, x)

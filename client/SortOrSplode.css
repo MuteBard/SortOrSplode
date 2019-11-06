@@ -10,14 +10,14 @@
     src: url('./CursedTimerUlil-Aznm.ttf') format('opentype')
 }
 *{
-    background-color: #193961;
-    color : white;
+    color : white; 
 }
 
-html, body {margin: 0; height: 100%; overflow: hidden}
+html, body {margin: 0; height: 100%; /*overflow: hidden ;*/  background-color: #193961;}
 
 .presentation{
-    display:flex;
+    margin-top: 10px;
+    display: flex;
     align-content: center;
     justify-content: center;
     flex-direction: column;
@@ -52,11 +52,20 @@ html, body {margin: 0; height: 100%; overflow: hidden}
 .darkRed{
     color: #BB3030;
 }
+.cobalt{
+    color: #295C9E;
+}
 
 
 .factoryStyle{
     font-family : "Factory";
     font-size : 40px;
+    color : "black"
+}
+
+.factoryStyle-table{
+    font-family : "Factory";
+    font-size : 20px;
     color : "black"
 }
 
@@ -71,6 +80,7 @@ html, body {margin: 0; height: 100%; overflow: hidden}
     flex-direction: column;
     color : "#FFFF00";
     margin: 20px;
+    padding-top: 20px; 
     font-size : 80px;
 
 }
@@ -83,16 +93,68 @@ html, body {margin: 0; height: 100%; overflow: hidden}
     text-align: center;
 }
 
-.buttonContainer{
+.registrationContainer{
     font-size: 1em;
     margin-top: 30px;
     justify-content: center;
     display: flex
 }
 
+.rankingContainer{
+    display : flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom : 10px;
+}
+
 .button{
     font-size: 1em
 }
+.playerName{
+    color: #FFFFFF;
+    background-color: #2F4C70;
+    border: 1px solid #2F4C70;
+}
+
+.playerName:focus {
+    outline-width: 0;
+}
+
+input[type=text], select, textarea {
+    width: 25%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+
+    border: 1px solid #2F4C70;
+    border-radius: 4px;
+  }
+
+table{
+    width: 75%;
+}
+
+th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color:  #2F4C70;
+    color: white;
+}
+
+.rankingContainer{
+    margin-top : 10px;
+}
+
+.rankings tr:nth-child(even){background-color:#293749;}
+.rankings tr:nth-child(odd){background-color:#21262B;}
+.rankings td, .rankings th {
+    padding: 4px 4px 4px 60px;
+}
+
+
+
 
 @-webkit-keyframes fadeOut {
     0% { opacity: 1;}
